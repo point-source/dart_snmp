@@ -8,7 +8,7 @@ enum SnmpVersion { v1, v2c, v3 }
 
 class Snmp {
   Snmp(this.target, this.port, this.trapPort, this.retries, this.timeout,
-      this.transport, this.version,
+      this.version,
       {this.community, this.user}) {
     assert(community != null || user != null);
   }
@@ -19,11 +19,9 @@ class Snmp {
       int trapPort = 162,
       int retries = 1,
       Duration timeout = const Duration(seconds: 5),
-      String transport = 'udp4',
       SnmpVersion version = SnmpVersion.v1}) async {
     assert(version != SnmpVersion.v3);
-    var session = Snmp(
-        target, port, trapPort, retries, timeout, transport, version,
+    var session = Snmp(target, port, trapPort, retries, timeout, version,
         community: community);
     await session._bind(InternetAddress.anyIPv4, port);
     return session;
@@ -33,10 +31,8 @@ class Snmp {
       {int port = 161,
       int trapPort = 162,
       int retries = 1,
-      Duration timeout = const Duration(seconds: 5),
-      String transport = 'udp4'}) async {
-    var session = Snmp(
-        target, port, trapPort, retries, timeout, transport, SnmpVersion.v3,
+      Duration timeout = const Duration(seconds: 5)}) async {
+    var session = Snmp(target, port, trapPort, retries, timeout, SnmpVersion.v3,
         user: user);
     await session._bind(InternetAddress.anyIPv4, port);
     return session;
@@ -49,7 +45,6 @@ class Snmp {
   String community;
   int retries = 1;
   Duration timeout = Duration(seconds: 5);
-  String transport = 'udp4';
   SnmpVersion version = SnmpVersion.v1;
   RawDatagramSocket socket;
 
