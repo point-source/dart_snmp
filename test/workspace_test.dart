@@ -1,4 +1,4 @@
-import 'package:workspace/workspace.dart';
+import 'package:workspace/snmp.dart';
 import 'package:test/test.dart';
 
 void main() {

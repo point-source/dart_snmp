@@ -1,4 +1,4 @@
-import 'package:workspace/workspace.dart';
+import 'package:workspace/snmp.dart';
 
 void main() {
   var awesome = Awesome();
