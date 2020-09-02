@@ -1,7 +1,7 @@
-name: workspace
-description: A starting point for Dart libraries or applications.
-# version: 1.0.0
-# homepage: https://www.example.com
+name: dart_snmp
+description: An snmp package for dart
+version: 0.0.1
+homepage: https://github.com/point-source/dart-snmp
 
 environment:
   sdk: '>=2.8.1 <3.0.0'
