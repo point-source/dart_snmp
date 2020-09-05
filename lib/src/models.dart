@@ -22,3 +22,12 @@ enum SecurityLevel {
 enum AuthProtocol { md5, sha }
 
 enum PrivProtocol { des, aes }
+
+class Oid {
+  Oid(String str) {
+    str = str.replaceAll(",", ".");
+    oid = str.split(".").map((e) => int.parse(e)).toList();
+  }
+
+  List<int> oid;
+}
