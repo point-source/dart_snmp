@@ -3,9 +3,9 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:dart_snmp/src/models.dart';
-
-enum SnmpVersion { v1, v2c, v3 }
+import 'package:dart_snmp/src/models/authentication.dart';
+import 'package:dart_snmp/src/models/message.dart';
+import 'package:dart_snmp/src/models/oid.dart';
 
 class Snmp {
   Snmp(this.target, this.port, this.trapPort, this.retries, this.timeout,
@@ -20,8 +20,8 @@ class Snmp {
       int trapPort = 162,
       int retries = 1,
       Duration timeout = const Duration(seconds: 5),
-      SnmpVersion version = SnmpVersion.v1}) async {
-    assert(version != SnmpVersion.v3);
+      SnmpVersion version = SnmpVersion.V1}) async {
+    assert(version != SnmpVersion.V3);
     var session = Snmp(target, port, trapPort, retries, timeout, version,
         community: community);
     await session._bind(InternetAddress.anyIPv4, port);
@@ -33,7 +33,7 @@ class Snmp {
       int trapPort = 162,
       int retries = 1,
       Duration timeout = const Duration(seconds: 5)}) async {
-    var session = Snmp(target, port, trapPort, retries, timeout, SnmpVersion.v3,
+    var session = Snmp(target, port, trapPort, retries, timeout, SnmpVersion.V3,
         user: user);
     await session._bind(InternetAddress.anyIPv4, port);
     return session;
@@ -46,7 +46,7 @@ class Snmp {
   String community;
   int retries = 1;
   Duration timeout = Duration(seconds: 5);
-  SnmpVersion version = SnmpVersion.v1;
+  SnmpVersion version = SnmpVersion.V1;
   RawDatagramSocket socket;
 
   Future<void> _bind(InternetAddress address, int port) async {
@@ -64,20 +64,23 @@ class Snmp {
 
   void _onClose() {
     // TODO(andrew): Handle closing
-    _cancelRequests(Exception("Socket forcibly closed"));
+    _cancelRequests(Exception('Socket forcibly closed'));
   }
 
   void _onError(Exception error) {
     // TODO(andrew): Handle emitting the error
+    throw error;
   }
 
   void _cancelRequests(Exception error) {
     // TODO(andrew): DO something
     // Is this needed?
-    throw 
+    throw error;
   }
 
   int _generateId(int bitSize) => bitSize == 16
       ? (Random().nextInt(10000) % 65535).floor()
       : (Random().nextInt(100000000) % 4294967295).floor();
+
+  void get(List<Oid> oids) {}
 }
