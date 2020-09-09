@@ -1,21 +1,21 @@
-import 'dart:typed_data';
-
 import 'package:asn1lib/asn1lib.dart';
 import 'package:dart_snmp/src/models/oid.dart';
 
-class Varbind {
+class Varbind<T> {
+  Varbind(this.oid, this.type, this.value);
+
   Oid oid;
   VarbindType type;
-  dynamic value;
+  T value;
 
-  Uint8List toBytes() {
+  ASN1Sequence get asAsn1Sequence {
     var sequence = ASN1Sequence();
-    sequence.add(oid.asAsn1Object);
-    sequence.add(_encode(type, value));
-    return sequence.valueBytes();
+    sequence.add(oid.asAsn1ObjectIdentifier);
+    sequence.add(_encodeValue(type, value));
+    return sequence;
   }
 
-  ASN1Object _encode(VarbindType type, dynamic value) {
+  ASN1Object _encodeValue(VarbindType type, dynamic value) {
     switch (type) {
       case VarbindType.Boolean:
         return value as bool

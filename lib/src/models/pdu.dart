@@ -1,13 +1,32 @@
+import 'package:asn1lib/asn1lib.dart';
 import 'package:dart_snmp/src/models/varbind.dart';
 
 class Pdu {
-  Pdu();
+  Pdu(this.type, this.requestId, this.varbinds,
+      {this.error = PduError.NoError, this.errorIndex = 0});
 
   PduType type;
   int requestId;
   PduError error;
   int errorIndex;
   List<Varbind> varbinds;
+
+  ASN1Sequence get asAsn1Sequence {
+    var sequence = ASN1Sequence(tag: type.value);
+    sequence.add(ASN1Integer.fromInt(requestId));
+    sequence.add(ASN1Integer.fromInt(error.value));
+    sequence.add(ASN1Integer.fromInt(errorIndex));
+    sequence.add(_varbindListSequence(varbinds));
+    return sequence;
+  }
+
+  ASN1Sequence _varbindListSequence(List<Varbind> varbinds) {
+    var sequence = ASN1Sequence();
+    for (var v in varbinds) {
+      sequence.add(v.asAsn1Sequence);
+    }
+    return sequence;
+  }
 }
 
 class PduType {

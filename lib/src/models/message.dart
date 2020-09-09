@@ -1,8 +1,20 @@
+import 'package:asn1lib/asn1lib.dart';
+import 'package:dart_snmp/src/models/pdu.dart';
+
 class Message {
-  Message();
+  Message(this.version, this.community, this.pdu);
 
   SnmpVersion version;
   String community;
+  Pdu pdu;
+
+  ASN1Sequence get asAsn1Sequence {
+    var sequence = ASN1Sequence();
+    sequence.add(ASN1Integer.fromInt(version.value));
+    sequence.add(ASN1OctetString(community));
+    sequence.add(pdu.asAsn1Sequence);
+    return sequence;
+  }
 }
 
 class SnmpVersion {

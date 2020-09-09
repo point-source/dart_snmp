@@ -28,7 +28,7 @@ class Snmp {
     return session;
   }
 
-  static Future<Snmp> createv3Session(InternetAddress target, User user,
+  static Future<Snmp> createV3Session(InternetAddress target, User user,
       {int port = 161,
       int trapPort = 162,
       int retries = 1,
