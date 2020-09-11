@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:asn1lib/asn1lib.dart';
 import 'package:dart_snmp/src/models/varbind.dart';
 
@@ -5,11 +7,38 @@ class Pdu {
   Pdu(this.type, this.requestId, this.varbinds,
       {this.error = PduError.NoError, this.errorIndex = 0});
 
+  Pdu.fromBytes(Uint8List bytes) {
+    var parser = ASN1Parser(bytes);
+    var sequence = parser.nextObject();
+    assert(sequence.tag > 159 && sequence.tag < 169); // PDU tags
+/*     for (var o in sequence.elements) {
+      switch (o.tag) {
+        case INTEGER_TYPE:
+          requestId = (o as ASN1Integer).intValue;
+          o = parser.nextObject();
+          error = PduError.fromInt((o as ASN1Integer).intValue);
+          o = parser.nextObject();
+          errorIndex = (o as ASN1Integer).intValue;
+          break;
+        case SEQUENCE_TYPE:
+          varbinds = [];
+          for (var v in (o as ASN1Sequence).elements) {
+            varbinds.add(Varbind.fromBytes(v.encodedBytes));
+          }
+          break;
+        default:
+          throw Exception('No matching snmp type for incoming bytes');
+      }
+    } */
+  }
+
   PduType type;
   int requestId;
   PduError error;
   int errorIndex;
   List<Varbind> varbinds;
+
+  Uint8List get encodedBytes => asAsn1Sequence.encodedBytes;
 
   ASN1Sequence get asAsn1Sequence {
     var sequence = ASN1Sequence(tag: type.value);
@@ -64,6 +93,8 @@ class PduType {
 
 class PduError {
   const PduError._internal(this.value);
+
+  PduError.fromInt(this.value);
 
   final int value;
 

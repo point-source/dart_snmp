@@ -1,12 +1,45 @@
+import 'dart:typed_data';
+
 import 'package:asn1lib/asn1lib.dart';
 import 'package:dart_snmp/src/models/pdu.dart';
 
 class Message {
   Message(this.version, this.community, this.pdu);
 
+  Message.fromBytes(Uint8List bytes) {
+    var parser = ASN1Parser(bytes);
+    ASN1Sequence sequence = parser.nextObject();
+    assert(sequence.tag == 48); // Message tag
+    for (var o in sequence.elements) {
+      switch (o.tag) {
+        case INTEGER_TYPE:
+          version = SnmpVersion.fromInt((o as ASN1Integer).intValue);
+          break;
+        case OCTET_STRING_TYPE:
+          community = (o as ASN1OctetString).stringValue;
+          break;
+        case GET_REQUEST:
+        case GET_NEXT_REQUEST:
+        case GET_RESPONSE:
+        case SET_REQUEST:
+        case TRAP:
+        case GET_BULK_REQUEST:
+        case INFORM_REQUEST:
+        case TRAP_V2:
+        case REPORT:
+          pdu = Pdu.fromBytes(o.encodedBytes);
+          break;
+        default:
+          throw Exception('No matching snmp type for incoming bytes');
+      }
+    }
+  }
+
   SnmpVersion version;
   String community;
   Pdu pdu;
+
+  Uint8List get encodedBytes => asAsn1Sequence.encodedBytes;
 
   ASN1Sequence get asAsn1Sequence {
     var sequence = ASN1Sequence();
@@ -19,6 +52,8 @@ class Message {
 
 class SnmpVersion {
   const SnmpVersion._internal(this.value);
+
+  SnmpVersion.fromInt(this.value);
 
   final int value;
 
