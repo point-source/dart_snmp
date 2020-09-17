@@ -6,6 +6,8 @@ import 'dart:math';
 import 'package:dart_snmp/src/models/authentication.dart';
 import 'package:dart_snmp/src/models/message.dart';
 import 'package:dart_snmp/src/models/oid.dart';
+import 'package:dart_snmp/src/models/pdu.dart';
+import 'package:dart_snmp/src/models/varbind.dart';
 
 class Snmp {
   Snmp(this.target, this.port, this.trapPort, this.retries, this.timeout,
@@ -46,7 +48,7 @@ class Snmp {
   String community;
   int retries = 1;
   Duration timeout = Duration(seconds: 5);
-  SnmpVersion version = SnmpVersion.V1;
+  SnmpVersion version = SnmpVersion.V2c;
   RawDatagramSocket socket;
 
   Future<void> _bind(InternetAddress address, int port) async {
@@ -60,6 +62,12 @@ class Snmp {
 
   void _onEvent(RawSocketEvent event) {
     // TODO(andrew): Handle event message
+    var d = socket.receive();
+    if (d == null) return;
+
+    var msg = Message.fromBytes(d.data);
+    print(
+        'Datagram from ${d.address.address}:${d.port}: ${msg.pdu.varbinds[0].value}');
   }
 
   void _onClose() {
@@ -67,7 +75,7 @@ class Snmp {
     _cancelRequests(Exception('Socket forcibly closed'));
   }
 
-  void _onError(Exception error) {
+  void _onError(Object error) {
     // TODO(andrew): Handle emitting the error
     throw error;
   }
@@ -83,4 +91,10 @@ class Snmp {
       : (Random().nextInt(100000000) % 4294967295).floor();
 
   void get(List<Oid> oids) {}
+
+  int send(List<Varbind> v) {
+    var pdu = Pdu(PduType.GetRequest, 1, v);
+    var msg = Message(version, community, pdu);
+    return socket.send(msg.encodedBytes, target, port);
+  }
 }
