@@ -7,8 +7,7 @@ class Message {
   Message(this.version, this.community, this.pdu);
 
   Message.fromBytes(Uint8List bytes) {
-    var parser = ASN1Parser(bytes);
-    ASN1Sequence sequence = parser.nextObject();
+    var sequence = ASN1Sequence.fromBytes(bytes);
     assert(sequence.tag == 48); // Message tag
     for (var o in sequence.elements) {
       switch (o.tag) {

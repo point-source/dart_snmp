@@ -7,15 +7,15 @@ class Varbind<T> {
   Varbind(this.oid, this.type, this.value);
 
   Varbind.fromBytes(Uint8List bytes) {
-    var parser = ASN1Parser(bytes);
-    while (parser.hasNext()) {
-      var o = parser.nextObject();
+    var sequence = ASN1Sequence.fromBytes(bytes);
+    for (var o in sequence.elements) {
       switch (o.tag) {
         case OBJECT_IDENTIFIER:
           oid = Oid.fromBytes(o.encodedBytes);
           break;
         default:
-          _decodeValue(o);
+          type = VarbindType.fromInt(o.tag);
+          value = _decodeValue(o) as T;
       }
     }
   }
@@ -48,7 +48,7 @@ class Varbind<T> {
         return ASN1Integer.fromInt(value);
 
       case VarbindType.OctetString:
-        return ASN1OctetString.fromBytes(value);
+        return ASN1OctetString(value);
 
       case VarbindType.Null:
         return ASN1Null();
@@ -77,7 +77,7 @@ class Varbind<T> {
   }
 
   dynamic _decodeValue(ASN1Object object) {
-    switch (VarbindType.fromInt(object.tag)) {
+    switch (type) {
       case VarbindType.Boolean:
         return value as bool
             ? ASN1Boolean.ASN1TrueBoolean
@@ -182,4 +182,8 @@ class VarbindType {
   static const NoSuchObject = VarbindType._internal(128);
   static const NoSuchInstance = VarbindType._internal(129);
   static const EndOfMibView = VarbindType._internal(130);
+
+  @override
+  bool operator ==(Varbind other) =>
+      identical(this, other) || this.value == other.value;
 }

@@ -8,28 +8,16 @@ class Pdu {
       {this.error = PduError.NoError, this.errorIndex = 0});
 
   Pdu.fromBytes(Uint8List bytes) {
-    var parser = ASN1Parser(bytes);
-    var sequence = parser.nextObject();
+    var sequence = ASN1Sequence.fromBytes(bytes);
     assert(sequence.tag > 159 && sequence.tag < 169); // PDU tags
-/*     for (var o in sequence.elements) {
-      switch (o.tag) {
-        case INTEGER_TYPE:
-          requestId = (o as ASN1Integer).intValue;
-          o = parser.nextObject();
-          error = PduError.fromInt((o as ASN1Integer).intValue);
-          o = parser.nextObject();
-          errorIndex = (o as ASN1Integer).intValue;
-          break;
-        case SEQUENCE_TYPE:
-          varbinds = [];
-          for (var v in (o as ASN1Sequence).elements) {
-            varbinds.add(Varbind.fromBytes(v.encodedBytes));
-          }
-          break;
-        default:
-          throw Exception('No matching snmp type for incoming bytes');
-      }
-    } */
+    type = PduType._internal(sequence.tag);
+    requestId = (sequence.elements[0] as ASN1Integer).intValue;
+    error = PduError.fromInt((sequence.elements[1] as ASN1Integer).intValue);
+    errorIndex = (sequence.elements[2] as ASN1Integer).intValue;
+    varbinds = [];
+    for (var v in (sequence.elements[3] as ASN1Sequence).elements) {
+      varbinds.add(Varbind.fromBytes(v.encodedBytes));
+    }
   }
 
   PduType type;
@@ -88,7 +76,7 @@ class PduType {
   static const GetBulkRequest = PduType._internal(165);
   static const InformRequest = PduType._internal(166);
   static const TrapV2 = PduType._internal(167);
-  static const Repor = PduType._internal(168);
+  static const Report = PduType._internal(168);
 }
 
 class PduError {
