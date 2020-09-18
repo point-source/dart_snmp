@@ -17,19 +17,12 @@ class Message {
         case OCTET_STRING_TYPE:
           community = (o as ASN1OctetString).stringValue;
           break;
-        case GET_REQUEST:
-        case GET_NEXT_REQUEST:
-        case GET_RESPONSE:
-        case SET_REQUEST:
-        case TRAP:
-        case GET_BULK_REQUEST:
-        case INFORM_REQUEST:
-        case TRAP_V2:
-        case REPORT:
-          pdu = Pdu.fromBytes(o.encodedBytes);
-          break;
         default:
-          throw Exception('No matching snmp type for incoming bytes');
+          if (PduType.contains(o.tag)) {
+            pdu = Pdu.fromBytes(o.encodedBytes);
+          } else {
+            throw Exception('No matching snmp type for incoming bytes');
+          }
       }
     }
   }

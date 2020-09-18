@@ -10,7 +10,7 @@ dependencies:
   asn1lib:
     git:
       url: git://github.com/point-source/asn1lib.git
-      ref: snmp
+      ref: develop
 
 dev_dependencies:
   pedantic: ^1.9.0

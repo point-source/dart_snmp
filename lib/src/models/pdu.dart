@@ -68,6 +68,8 @@ class PduType {
 
   String get name => _types[value];
 
+  static bool contains(int i) => _types.containsKey(i);
+
   static const GetRequest = PduType._internal(160);
   static const GetNextRequest = PduType._internal(161);
   static const GetResponse = PduType._internal(162);
