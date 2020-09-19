@@ -79,6 +79,10 @@ class PduType {
   static const InformRequest = PduType._internal(166);
   static const TrapV2 = PduType._internal(167);
   static const Report = PduType._internal(168);
+
+  @override
+  bool operator ==(PduType other) =>
+      identical(this, other) || value == other.value;
 }
 
 class PduError {
@@ -134,4 +138,8 @@ class PduError {
   static const AuthorizationError = PduError._internal(16);
   static const NotWritable = PduError._internal(17);
   static const InconsistentNam = PduError._internal(18);
+
+  @override
+  bool operator ==(PduError other) =>
+      identical(this, other) || value == other.value;
 }
