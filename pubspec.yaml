@@ -1,7 +1,7 @@
 name: dart_snmp
-description: An snmp package for dart
+description: An snmp package for dart (loosely based on the js net-snmp package)
 version: 0.0.1
-homepage: https://github.com/point-source/dart-snmp
+homepage: https://github.com/point-source/dart_snmp
 
 environment:
   sdk: '>=2.8.1 <3.0.0'
