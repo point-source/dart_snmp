@@ -20,6 +20,8 @@ class Oid {
 
   Uint8List get encodedBytes => _oid.encodedBytes;
 
+  String get identifier => _oid.identifier;
+
   @override
-  String toString() => _oid.oi.join('.');
+  String toString() => 'Oid($identifier)';
 }

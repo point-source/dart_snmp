@@ -18,6 +18,9 @@ class Varbind<T> {
   VarbindType type;
   T value;
 
+  @override
+  String toString() => '${oid.identifier} = ${type.name}: $value';
+
   Uint8List get encodedBytes => asAsn1Sequence.encodedBytes;
 
   ASN1Sequence get asAsn1Sequence {
