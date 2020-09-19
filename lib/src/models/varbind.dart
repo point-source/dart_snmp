@@ -143,8 +143,8 @@ class VarbindType {
     5: 'Null',
     6: 'OID',
     64: 'IpAddress',
-    65: 'Counter',
-    66: 'Gauge',
+    65: 'Counter32',
+    66: 'Gauge32',
     67: 'TimeTicks',
     68: 'Opaque',
     70: 'Counter64',
@@ -160,8 +160,8 @@ class VarbindType {
     5: int, // Null
     6: String, // OID
     64: String, // IpAddress
-    65: int, // Counter
-    66: int, // Gauge
+    65: int, // Counter32
+    66: int, // Gauge32
     67: int, // TimeTicks
     68: dynamic, // Opaque
     70: int, // Counter64
