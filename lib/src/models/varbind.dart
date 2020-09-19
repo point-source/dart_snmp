@@ -83,12 +83,24 @@ class Varbind<T> {
       case VarbindType.Integer:
       case VarbindType.Counter:
       case VarbindType.Gauge:
-      case VarbindType.TimeTicks:
       case VarbindType.Counter64:
         return ASN1Integer.fromBytes(object.encodedBytes).intValue;
 
+      case VarbindType.TimeTicks:
+        return Duration(
+            milliseconds:
+                ASN1Integer.fromBytes(object.encodedBytes).intValue * 10);
+
       case VarbindType.OctetString:
-        return (object as ASN1OctetString).stringValue;
+        var o;
+        for (var i in object.contentBytes()) {
+          if (!isPrintable(i)) {
+            o = ASN1OctetString.fromBytes(object.encodedBytes);
+            break;
+          }
+        }
+        o ??= ASN1PrintableString.fromBytes(object.encodedBytes);
+        return o.stringValue;
 
       case VarbindType.Null:
         return null;
