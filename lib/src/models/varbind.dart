@@ -8,16 +8,10 @@ class Varbind<T> {
 
   Varbind.fromBytes(Uint8List bytes) {
     var sequence = ASN1Sequence.fromBytes(bytes);
-    for (var o in sequence.elements) {
-      switch (o.tag) {
-        case OBJECT_IDENTIFIER:
-          oid = Oid.fromBytes(o.encodedBytes);
-          break;
-        default:
-          type = VarbindType.fromInt(o.tag);
-          value = _decodeValue(o) as T;
-      }
-    }
+    assert(sequence.elements[0].tag == OBJECT_IDENTIFIER);
+    oid = Oid.fromBytes(sequence.elements[0].encodedBytes);
+    type = VarbindType.fromInt(sequence.elements[1].tag);
+    value = _decodeValue(sequence.elements[1]) as T;
   }
 
   Oid oid;
@@ -88,7 +82,7 @@ class Varbind<T> {
       case VarbindType.Gauge:
       case VarbindType.TimeTicks:
       case VarbindType.Counter64:
-        return (object as ASN1Integer).intValue;
+        return ASN1Integer.fromBytes(object.encodedBytes).intValue;
 
       case VarbindType.OctetString:
         return (object as ASN1OctetString).stringValue;
@@ -100,7 +94,7 @@ class Varbind<T> {
         return (object as ASN1ObjectIdentifier).identifier;
 
       case VarbindType.IpAddress:
-        throw (object as ASN1IpAddress).stringValue;
+        return ASN1IpAddress.fromBytes(object.encodedBytes).stringValue;
 
       case VarbindType.Opaque:
         throw Exception('Not implemented');
