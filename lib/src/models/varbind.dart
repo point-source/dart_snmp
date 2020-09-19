@@ -92,15 +92,7 @@ class Varbind<T> {
                 ASN1Integer.fromBytes(object.encodedBytes).intValue * 10);
 
       case VarbindType.OctetString:
-        var o;
-        for (var i in object.contentBytes()) {
-          if (!isPrintable(i)) {
-            o = ASN1OctetString.fromBytes(object.encodedBytes);
-            break;
-          }
-        }
-        o ??= ASN1PrintableString.fromBytes(object.encodedBytes);
-        return o.stringValue;
+        return (object as ASN1OctetString).stringValue;
 
       case VarbindType.Null:
         return null;
