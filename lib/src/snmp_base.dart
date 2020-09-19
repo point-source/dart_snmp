@@ -24,7 +24,7 @@ class Snmp {
       int trapPort = 162,
       int retries = 1,
       Duration timeout = const Duration(seconds: 5),
-      SnmpVersion version = SnmpVersion.V1}) async {
+      SnmpVersion version = SnmpVersion.V2c}) async {
     assert(version != SnmpVersion.V3);
     var session = Snmp(target, port, trapPort, retries, timeout, version,
         community: community);
