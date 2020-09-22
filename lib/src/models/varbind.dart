@@ -104,16 +104,12 @@ class Varbind<T> {
         return ASN1IpAddress.fromBytes(object.encodedBytes).stringValue;
 
       case VarbindType.Opaque:
-        throw Exception('Not implemented');
+        throw Exception('VarbindType.Opaque Not implemented');
 
       case VarbindType.NoSuchObject:
-        throw Exception('Not implemented');
-
       case VarbindType.NoSuchInstance:
-        throw Exception('Not implemented');
-
       case VarbindType.EndOfMibView:
-        throw Exception('Not implemented');
+        return object;
 
       default:
         throw Exception('Unrecognized type');
@@ -185,6 +181,6 @@ class VarbindType {
   static const EndOfMibView = VarbindType._internal(130);
 
   @override
-  bool operator ==(Varbind other) =>
+  bool operator ==(VarbindType other) =>
       identical(this, other) || this.value == other.value;
 }
