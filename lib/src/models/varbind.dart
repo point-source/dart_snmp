@@ -104,8 +104,6 @@ class Varbind<T> {
         return ASN1IpAddress.fromBytes(object.encodedBytes).stringValue;
 
       case VarbindType.Opaque:
-        throw Exception('VarbindType.Opaque Not implemented');
-
       case VarbindType.NoSuchObject:
       case VarbindType.NoSuchInstance:
       case VarbindType.EndOfMibView:
