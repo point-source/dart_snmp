@@ -97,7 +97,7 @@ class Snmp {
   }
 
   void _onError(Object error) {
-    // TODO(andrew): Handle emitting the error
+    Logger.root.severe(error);
     throw error;
   }
 
