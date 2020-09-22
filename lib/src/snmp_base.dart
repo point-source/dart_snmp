@@ -109,11 +109,13 @@ class Snmp {
       ? (Random().nextInt(10000) % 65535).floor()
       : (Random().nextInt(100000000) % 4294967295).floor();
 
-  Future<Message> get(Oid oid) => _get(oid, PduType.GetRequest);
+  Future<Message> get(Oid oid, {InternetAddress target, int port}) =>
+      _get(oid, PduType.GetRequest, target: target, port: port);
 
-  Future<Message> getNext(Oid oid) => _get(oid, PduType.GetNextRequest);
+  Future<Message> getNext(Oid oid, {InternetAddress target, int port}) =>
+      _get(oid, PduType.GetNextRequest, target: target, port: port);
 
-  Stream<Message> walk() {
+  Stream<Message> walk({InternetAddress target, int port}) {
     StreamController<Message> _ctrl;
     var paused = false;
     var oid = Oid.fromString('1.3');
@@ -121,7 +123,7 @@ class Snmp {
     void _walk() async {
       while (true) {
         if (!paused) {
-          var msg = await getNext(oid);
+          var msg = await getNext(oid, target: target, port: port);
           oid = msg.pdu.varbinds.last.oid;
           if (msg.pdu.error == PduError.NoSuchName) {
             Logger.root.finest('Reached end of walk: ${msg.pdu.error}');
@@ -146,7 +148,10 @@ class Snmp {
     return _ctrl.stream;
   }
 
-  Future<Message> _get(Oid oid, PduType type) async {
+  Future<Message> _get(Oid oid, PduType type,
+      {InternetAddress target, int port}) async {
+    target ??= this.target;
+    port ??= this.port;
     var c = Completer<Message>();
     var v = Varbind<String>(oid, VarbindType.Null, null);
     var p = Pdu(type, _generateId(32), [v]);
