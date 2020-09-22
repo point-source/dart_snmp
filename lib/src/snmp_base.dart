@@ -1,5 +1,3 @@
-// TODO: Put public facing types in this file.
-
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -48,9 +46,9 @@ class Snmp {
   int trapPort;
   User user;
   String community;
-  int retries = 1;
-  Duration timeout = Duration(seconds: 5);
-  SnmpVersion version = SnmpVersion.V2c;
+  int retries;
+  Duration timeout;
+  SnmpVersion version;
   RawDatagramSocket socket;
   Map<int, Request> requests = {};
 
@@ -123,14 +121,26 @@ class Snmp {
       p.requestId = _generateId(16);
     }
     var m = Message(version, community, p);
-    var r = Request(target, port, m, timeout, retries, c.complete,
-        c.completeError, _cancelRequest);
+    var r =
+        Request(target, port, m, timeout, retries, c.complete, c.completeError);
     _send(r);
     return c.future;
   }
 
   void _send(Request r) {
+    print('sending..');
     socket.send(r.message.encodedBytes, r.target, r.port);
+    Future<void>.delayed(r.timeout, () => _timeout(r));
     requests[r.requestId] = r;
+  }
+
+  void _timeout(Request r) {
+    if (r.retries > 0) {
+      r.retries--;
+      _send(r);
+    } else {
+      _cancelRequest(r.requestId);
+      print(requests);
+    }
   }
 }
