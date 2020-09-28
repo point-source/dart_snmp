@@ -50,8 +50,8 @@ class SnmpVersion {
   final int value;
 
   static const Map<int, String> _versions = <int, String>{
-    0: 'v1c',
-    1: 'v2',
+    0: 'v1',
+    1: 'v2c',
     3: 'v3',
   };
 
