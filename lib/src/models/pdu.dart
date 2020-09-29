@@ -81,8 +81,8 @@ class PduType {
   static const Report = PduType._internal(168);
 
   @override
-  bool operator ==(PduType other) =>
-      identical(this, other) || value == other.value;
+  bool operator ==(Object other) =>
+      other is PduType && (identical(this, other) || value == other.value);
 }
 
 class PduError {
@@ -140,6 +140,6 @@ class PduError {
   static const InconsistentNam = PduError._internal(18);
 
   @override
-  bool operator ==(PduError other) =>
-      identical(this, other) || value == other.value;
+  bool operator ==(Object other) =>
+      other is PduError && (identical(this, other) || value == other.value);
 }

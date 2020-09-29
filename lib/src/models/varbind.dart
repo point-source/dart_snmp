@@ -179,6 +179,6 @@ class VarbindType {
   static const EndOfMibView = VarbindType._internal(130);
 
   @override
-  bool operator ==(VarbindType other) =>
-      identical(this, other) || this.value == other.value;
+  bool operator ==(Object other) =>
+      other is VarbindType && (identical(this, other) || value == other.value);
 }
