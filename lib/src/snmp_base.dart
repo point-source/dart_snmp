@@ -153,7 +153,7 @@ class Snmp {
     target ??= this.target;
     port ??= this.port;
     var c = Completer<Message>();
-    var v = Varbind<String>(oid, VarbindType.Null, null);
+    var v = Varbind(oid, VarbindType.Null, null);
     var p = Pdu(type, _generateId(32), [v]);
     while (requests.containsKey(p.requestId)) {
       p.requestId = _generateId(32);

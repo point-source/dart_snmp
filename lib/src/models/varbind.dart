@@ -1,9 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:asn1lib/asn1lib.dart';
+import 'package:dart_snmp/dart_snmp.dart';
 import 'package:dart_snmp/src/models/oid.dart';
 
-class Varbind<T> {
+class Varbind {
   Varbind(this.oid, this.type, this.value);
 
   Varbind.fromBytes(Uint8List bytes) {
@@ -11,12 +12,12 @@ class Varbind<T> {
     assert(sequence.elements[0].tag == OBJECT_IDENTIFIER);
     oid = Oid.fromBytes(sequence.elements[0].encodedBytes);
     type = VarbindType.fromInt(sequence.elements[1].tag);
-    value = _decodeValue(sequence.elements[1]) as T;
+    value = _decodeValue(sequence.elements[1]);
   }
 
   Oid oid;
   VarbindType type;
-  T value;
+  dynamic value;
 
   @override
   String toString() => '${oid.identifier} = ${type.name}: $value';
@@ -143,13 +144,13 @@ class VarbindType {
     1: bool, // Boolean
     2: int, // Integer
     4: String, // OctetString
-    5: int, // Null
+    5: null, // Null
     6: String, // OID
     64: String, // IpAddress
     65: int, // Counter32
     66: int, // Gauge32
     67: int, // TimeTicks
-    68: dynamic, // Opaque
+    68: Uint8List, // Opaque
     70: int, // Counter64
     128: int, // NoSuchObject
     129: int, // NoSuchInstance
