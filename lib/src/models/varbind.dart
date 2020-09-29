@@ -57,16 +57,16 @@ class Varbind<T> {
         throw ASN1IpAddress.fromComponentString(value);
 
       case VarbindType.Opaque:
-        throw Exception('Not implemented');
+        throw Exception('Opaque type not yet implemented');
 
       case VarbindType.NoSuchObject:
-        throw Exception('Not implemented');
+        throw Exception('NoSuchObject type not yet implemented');
 
       case VarbindType.NoSuchInstance:
-        throw Exception('Not implemented');
+        throw Exception('NoSuchInstance type not yet implemented');
 
       case VarbindType.EndOfMibView:
-        throw Exception('Not implemented');
+        throw Exception('EndOfMibView not yet implemented');
 
       default:
         throw Exception('Unrecognized type');
