@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:asn1lib/asn1lib.dart';
@@ -41,8 +42,12 @@ class Varbind {
       case VarbindType.Integer:
       case VarbindType.Counter:
       case VarbindType.Gauge:
-      case VarbindType.TimeTicks:
       case VarbindType.Counter64:
+        return ASN1Integer.fromInt(value);
+      case VarbindType.TimeTicks:
+        if (value is Duration) {
+          return ASN1Integer.fromInt(value.inMilliseconds ~/ 10);
+        }
         return ASN1Integer.fromInt(value);
 
       case VarbindType.OctetString:
@@ -55,7 +60,10 @@ class Varbind {
         return ASN1ObjectIdentifier.fromComponentString(value);
 
       case VarbindType.IpAddress:
-        throw ASN1IpAddress.fromComponentString(value);
+        if (value is InternetAddress) {
+          return ASN1IpAddress.fromComponentString(value.address);
+        }
+        return ASN1IpAddress.fromComponentString(value);
 
       case VarbindType.Opaque:
         throw Exception('Opaque type not yet implemented');
