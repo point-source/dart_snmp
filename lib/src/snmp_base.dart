@@ -148,6 +148,24 @@ class Snmp {
     return _ctrl.stream;
   }
 
+  Future<Message> set(Varbind varbind,
+      {InternetAddress target, int port}) async {
+    target ??= this.target;
+    port ??= this.port;
+    var c = Completer<Message>();
+    var p = Pdu(PduType.SetRequest, _generateId(32), [varbind]);
+    while (requests.containsKey(p.requestId)) {
+      p.requestId = _generateId(32);
+    }
+    var m = Message(version, community, p);
+    var r =
+        Request(target, port, m, timeout, retries, c.complete, c.completeError);
+    _send(r);
+    var result = await c.future;
+    requests.remove(r.requestId);
+    return result;
+  }
+
   Future<Message> _get(Oid oid, PduType type,
       {InternetAddress target, int port}) async {
     target ??= this.target;
