@@ -85,9 +85,7 @@ class Varbind {
   dynamic _decodeValue(ASN1Object object) {
     switch (type) {
       case VarbindType.Boolean:
-        return value as bool
-            ? ASN1Boolean.ASN1TrueBoolean
-            : ASN1Boolean.ASN1FalseBoolean;
+        return (object as ASN1Boolean).booleanValue;
 
       case VarbindType.Integer:
       case VarbindType.Counter:
@@ -113,6 +111,8 @@ class Varbind {
         return ASN1IpAddress.fromBytes(object.encodedBytes).stringValue;
 
       case VarbindType.Opaque:
+        return object.valueBytes();
+
       case VarbindType.NoSuchObject:
       case VarbindType.NoSuchInstance:
       case VarbindType.EndOfMibView:
