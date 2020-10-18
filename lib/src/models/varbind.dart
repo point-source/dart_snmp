@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -99,6 +100,10 @@ class Varbind {
                 ASN1Integer.fromBytes(object.encodedBytes).intValue * 10);
 
       case VarbindType.OctetString:
+        if (object.valueBytes().any((e) => e > 127)) {
+          // Not Ascii
+          return base64Encode(object.valueBytes());
+        }
         return (object as ASN1OctetString).stringValue;
 
       case VarbindType.Null:
