@@ -26,11 +26,13 @@ class Snmp {
       int retries = 1,
       Duration timeout = const Duration(seconds: 5),
       SnmpVersion version = SnmpVersion.V2c,
+      InternetAddress sourceAddress,
+      int sourcePort,
       Level logLevel = Level.OFF}) async {
     assert(version != SnmpVersion.V3);
     var session = Snmp(target, port, trapPort, retries, timeout, version,
         community: community, logLevel: logLevel);
-    await session._bind(InternetAddress.anyIPv4, port);
+    await session._bind(address: sourceAddress, port: sourcePort);
     return session;
   }
 
@@ -39,10 +41,12 @@ class Snmp {
       int trapPort = 162,
       int retries = 1,
       Duration timeout = const Duration(seconds: 5),
+      InternetAddress sourceAddress,
+      int sourcePort,
       Level logLevel = Level.OFF}) async {
     var session = Snmp(target, port, trapPort, retries, timeout, SnmpVersion.V3,
         user: user, logLevel: logLevel);
-    await session._bind(InternetAddress.anyIPv4, port);
+    await session._bind(address: sourceAddress, port: sourcePort);
     return session;
   }
 
@@ -54,6 +58,8 @@ class Snmp {
   int retries;
   Duration timeout;
   SnmpVersion version;
+  InternetAddress sourceAddress;
+  int sourcePort;
   RawDatagramSocket socket;
   Map<int, Request> requests = {};
 
@@ -63,7 +69,9 @@ class Snmp {
         .listen((r) => print('${r.level.name}: ${r.time}: ${r.message}'));
   }
 
-  Future<void> _bind(InternetAddress address, int port) async {
+  Future<void> _bind({InternetAddress address, int port}) async {
+    address ??= InternetAddress.anyIPv4;
+    port ??= 49152 + Random().nextInt(16383); // IANA range 49152 to 65535
     socket = await RawDatagramSocket.bind(address, port);
     socket.listen(_onEvent, onError: _onError, onDone: _onClose);
     Logger.root.info('Bound to target ${address.address} on port $port');
