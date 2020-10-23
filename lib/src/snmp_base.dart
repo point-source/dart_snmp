@@ -13,8 +13,8 @@ import 'package:logging/logging.dart';
 class Snmp {
   Snmp(this.target, this.port, this.trapPort, this.retries, this.timeout,
       this.version,
-      {this.community, this.user, Level logLevel = Level.OFF}) {
-    _logging(logLevel);
+      {this.community, this.user, Level logLevel}) {
+    if (logLevel != null) _logging(logLevel);
     assert(community != null || user != null);
     Logger.root.info('Snmp ${version.name} session initialized.');
   }
@@ -28,7 +28,7 @@ class Snmp {
       SnmpVersion version = SnmpVersion.V2c,
       InternetAddress sourceAddress,
       int sourcePort,
-      Level logLevel = Level.OFF}) async {
+      Level logLevel}) async {
     assert(version != SnmpVersion.V3);
     var session = Snmp(target, port, trapPort, retries, timeout, version,
         community: community, logLevel: logLevel);
@@ -43,7 +43,7 @@ class Snmp {
       Duration timeout = const Duration(seconds: 5),
       InternetAddress sourceAddress,
       int sourcePort,
-      Level logLevel = Level.OFF}) async {
+      Level logLevel}) async {
     var session = Snmp(target, port, trapPort, retries, timeout, SnmpVersion.V3,
         user: user, logLevel: logLevel);
     await session._bind(address: sourceAddress, port: sourcePort);
