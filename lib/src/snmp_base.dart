@@ -88,11 +88,11 @@ class Snmp {
 
     var msg = Message.fromBytes(d.data);
     if (requests.containsKey(msg.pdu.requestId)) {
-      Logger.root.finer('Received expected message from ${d.address}');
+      Logger.root.finest('Received expected message from ${d.address}');
       requests[msg.pdu.requestId].complete(msg);
     } else {
       Logger.root
-          .finer('Discarding unexpected message from ${d.address.address}');
+          .finest('Discarding unexpected message from ${d.address.address}');
     }
 /*     print(
         'Datagram from ${d.address.address}:${d.port}: ${msg.pdu.varbinds[0].value}'); */
@@ -134,10 +134,10 @@ class Snmp {
           var msg = await getNext(oid, target: target, port: port);
           oid = msg.pdu.varbinds.last.oid;
           if (msg.pdu.error == PduError.NoSuchName) {
-            Logger.root.finest('Reached end of walk: ${msg.pdu.error}');
+            Logger.root.finer('Reached end of walk: ${msg.pdu.error}');
             break;
           } else if (msg.pdu.varbinds[0].type == VarbindType.EndOfMibView) {
-            Logger.root.finest('Reached end of MIB view');
+            Logger.root.finer('Reached end of MIB view');
             break;
           } else {
             _ctrl.add(msg);
@@ -194,7 +194,7 @@ class Snmp {
   }
 
   void _send(Request r) {
-    Logger.root.finer('Sending: $r');
+    Logger.root.finest('Sending: $r');
     socket.send(r.message.encodedBytes, r.target, r.port);
     Future<void>.delayed(r.timeout, () => _timeout(r));
     requests[r.requestId] = r;
