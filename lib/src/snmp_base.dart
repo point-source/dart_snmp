@@ -8,15 +8,19 @@ import 'package:dart_snmp/src/models/oid.dart';
 import 'package:dart_snmp/src/models/pdu.dart';
 import 'package:dart_snmp/src/models/request.dart';
 import 'package:dart_snmp/src/models/varbind.dart';
-import 'package:logging/logging.dart';
+import 'package:logging/logging.dart' as logging;
+
+final log = logging.Logger('Snmp');
 
 class Snmp {
   Snmp(this.target, this.port, this.trapPort, this.retries, this.timeout,
       this.version,
-      {this.community, this.user, Level logLevel}) {
-    if (logLevel != null) _logging(logLevel);
+      {this.community,
+      this.user,
+      logging.Level logLevel = logging.Level.INFO}) {
+    _logging(logLevel);
     assert(community != null || user != null);
-    Logger.root.info('Snmp ${version.name} session initialized.');
+    log.info('Snmp ${version.name} session initialized.');
   }
 
   static Future<Snmp> createSession(InternetAddress target,
@@ -28,7 +32,7 @@ class Snmp {
       SnmpVersion version = SnmpVersion.V2c,
       InternetAddress sourceAddress,
       int sourcePort,
-      Level logLevel}) async {
+      logging.Level logLevel}) async {
     assert(version != SnmpVersion.V3);
     var session = Snmp(target, port, trapPort, retries, timeout, version,
         community: community, logLevel: logLevel);
@@ -43,7 +47,7 @@ class Snmp {
       Duration timeout = const Duration(seconds: 5),
       InternetAddress sourceAddress,
       int sourcePort,
-      Level logLevel}) async {
+      logging.Level logLevel}) async {
     var session = Snmp(target, port, trapPort, retries, timeout, SnmpVersion.V3,
         user: user, logLevel: logLevel);
     await session._bind(address: sourceAddress, port: sourcePort);
@@ -63,9 +67,10 @@ class Snmp {
   RawDatagramSocket socket;
   Map<int, Request> requests = {};
 
-  void _logging(Level level) {
-    Logger.root.level = level;
-    Logger.root.onRecord
+  void _logging(logging.Level level) {
+    logging.hierarchicalLoggingEnabled = true;
+    log.level = level;
+    log.onRecord
         .listen((r) => print('${r.level.name}: ${r.time}: ${r.message}'));
   }
 
@@ -74,12 +79,12 @@ class Snmp {
     port ??= 49152 + Random().nextInt(16383); // IANA range 49152 to 65535
     socket = await RawDatagramSocket.bind(address, port);
     socket.listen(_onEvent, onError: _onError, onDone: _onClose);
-    Logger.root.info('Bound to target ${address.address} on port $port');
+    log.info('Bound to target ${address.address} on port $port');
   }
 
   void close() {
     socket.close();
-    Logger.root.info('Socket on ${target.address}:$port closed.');
+    log.info('Socket on ${target.address}:$port closed.');
   }
 
   void _onEvent(RawSocketEvent event) {
@@ -88,11 +93,10 @@ class Snmp {
 
     var msg = Message.fromBytes(d.data);
     if (requests.containsKey(msg.pdu.requestId)) {
-      Logger.root.finest('Received expected message from ${d.address}');
+      log.finest('Received expected message from ${d.address}');
       requests[msg.pdu.requestId].complete(msg);
     } else {
-      Logger.root
-          .finest('Discarding unexpected message from ${d.address.address}');
+      log.finest('Discarding unexpected message from ${d.address.address}');
     }
 /*     print(
         'Datagram from ${d.address.address}:${d.port}: ${msg.pdu.varbinds[0].value}'); */
@@ -105,7 +109,7 @@ class Snmp {
   }
 
   void _onError(Object error) {
-    Logger.root.severe(error);
+    log.severe(error);
     throw error;
   }
 
@@ -134,10 +138,10 @@ class Snmp {
           var msg = await getNext(oid, target: target, port: port);
           oid = msg.pdu.varbinds.last.oid;
           if (msg.pdu.error == PduError.NoSuchName) {
-            Logger.root.finer('Reached end of walk: ${msg.pdu.error}');
+            log.finer('Reached end of walk: ${msg.pdu.error}');
             break;
           } else if (msg.pdu.varbinds[0].type == VarbindType.EndOfMibView) {
-            Logger.root.finer('Reached end of MIB view');
+            log.finer('Reached end of MIB view');
             break;
           } else {
             _ctrl.add(msg);
@@ -194,7 +198,7 @@ class Snmp {
   }
 
   void _send(Request r) {
-    Logger.root.finest('Sending: $r');
+    log.finest('Sending: $r');
     socket.send(r.message.encodedBytes, r.target, r.port);
     Future<void>.delayed(r.timeout, () => _timeout(r));
     requests[r.requestId] = r;
@@ -209,7 +213,7 @@ class Snmp {
         var e = Exception('Request to ${r.target.address}:${r.port} timed out');
         r.completeError(e);
         _cancelRequest(r.requestId);
-        Logger.root.info(e);
+        log.info(e);
       }
     }
   }
