@@ -13,7 +13,7 @@ import 'package:logging/logging.dart' as logging;
 final log = logging.Logger('Snmp');
 
 class Snmp {
-  Snmp(this.target, this.port, this.trapPort, this.retries, this.timeout,
+  Snmp._(this.target, this.port, this.trapPort, this.retries, this.timeout,
       this.version,
       {this.community,
       this.user,
@@ -34,7 +34,7 @@ class Snmp {
       int sourcePort,
       logging.Level logLevel}) async {
     assert(version != SnmpVersion.V3);
-    var session = Snmp(target, port, trapPort, retries, timeout, version,
+    var session = Snmp._(target, port, trapPort, retries, timeout, version,
         community: community, logLevel: logLevel);
     await session._bind(address: sourceAddress, port: sourcePort);
     return session;
@@ -48,7 +48,8 @@ class Snmp {
       InternetAddress sourceAddress,
       int sourcePort,
       logging.Level logLevel}) async {
-    var session = Snmp(target, port, trapPort, retries, timeout, SnmpVersion.V3,
+    var session = Snmp._(
+        target, port, trapPort, retries, timeout, SnmpVersion.V3,
         user: user, logLevel: logLevel);
     await session._bind(address: sourceAddress, port: sourcePort);
     return session;
@@ -127,10 +128,10 @@ class Snmp {
   Future<Message> getNext(Oid oid, {InternetAddress target, int port}) =>
       _get(oid, PduType.GetNextRequest, target: target, port: port);
 
-  Stream<Message> walk({InternetAddress target, int port}) {
+  Stream<Message> walk({Oid oid, InternetAddress target, int port}) {
     StreamController<Message> _ctrl;
     var paused = false;
-    var oid = Oid.fromString('1.3');
+    oid ??= Oid.fromString('1.3.6.1');
 
     void _walk() async {
       while (true) {
