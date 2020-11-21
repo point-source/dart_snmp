@@ -3,9 +3,12 @@ import 'dart:typed_data';
 import 'package:asn1lib/asn1lib.dart';
 import 'package:dart_snmp/src/models/pdu.dart';
 
+/// An SNMP v1 or v2c Message which contains the credential information
+/// necessary to package a [Pdu] to be sent to a target device
 class Message {
   Message(this.version, this.community, this.pdu);
 
+  /// Parses a list of bytes into a Message object
   Message.fromBytes(Uint8List bytes) {
     var sequence = ASN1Sequence.fromBytes(bytes);
     assert(sequence.tag == 48); // Message tag
@@ -29,10 +32,14 @@ class Message {
 
   SnmpVersion version;
   String community;
+
+  /// A Protocol Data Unit which contains a list of [Varbind]s
   Pdu pdu;
 
+  /// Converts the Message to a (transmittable) list of bytes
   Uint8List get encodedBytes => asAsn1Sequence.encodedBytes;
 
+  /// Converts the Message to an [ASN1Sequence] object
   ASN1Sequence get asAsn1Sequence {
     var sequence = ASN1Sequence();
     sequence.add(ASN1Integer.fromInt(version.value));
@@ -42,6 +49,7 @@ class Message {
   }
 }
 
+/// The version of the snmp protocol to use
 class SnmpVersion {
   const SnmpVersion._internal(this.value);
 

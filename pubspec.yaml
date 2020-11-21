@@ -1,6 +1,6 @@
 name: dart_snmp
 description: A dart library for communicating with simple network management protocol (snmp) enabled devices
-version: 1.0.1-dev
+version: 1.0.2-dev
 homepage: https://github.com/point-source/dart_snmp
 repository: https://github.com/point-source/dart_snmp
 issue_tracker: https://github.com/point-source/dart_snmp/issues

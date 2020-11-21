@@ -23,6 +23,7 @@ class Snmp {
     log.info('Snmp ${version.name} session initialized.');
   }
 
+  /// Opens an SNMP v1 or v2c (default) session with [target]
   static Future<Snmp> createSession(InternetAddress target,
       {String community = 'public',
       int port = 161,
@@ -40,6 +41,7 @@ class Snmp {
     return session;
   }
 
+  /// Opens an SNMP v3 session with [target]
   static Future<Snmp> createV3Session(InternetAddress target, User user,
       {int port = 161,
       int trapPort = 162,
@@ -55,17 +57,38 @@ class Snmp {
     return session;
   }
 
+  /// The address of the target device we want to communicate with
   InternetAddress target;
+
+  /// The port which the target device has opened for snmp traffic
   int port;
+
+  /// The local port where we intend to receive snmp trap messages
   int trapPort;
+
+  /// The user credential to use when communicating via SNMP v3
   User user;
+
+  /// The community string to use when communicating via SNMP v1 or v2c
   String community;
+
+  /// How many times to retry a single snmp request before throwing
   int retries;
+
+  /// How long to wait for a single snmp request to resolve
   Duration timeout;
   SnmpVersion version;
+
+  /// The local address to listen for snmp responses on
   InternetAddress sourceAddress;
+
+  /// The local port to listen for snmp responses on
   int sourcePort;
+
+  /// The socket used for all incoming/outgoing snmp requests/responses
   RawDatagramSocket socket;
+
+  /// A map of sent snmp requests which are still awaiting a response
   Map<int, Request> requests = {};
 
   void _logging(logging.Level level) {
@@ -83,6 +106,7 @@ class Snmp {
     log.info('Bound to target ${address.address} on port $port');
   }
 
+  /// Closes the network socket
   void close() {
     socket.close();
     log.info('Socket on ${target.address}:$port closed.');
@@ -122,12 +146,17 @@ class Snmp {
       ? (Random().nextInt(10000) % 65535).floor()
       : (Random().nextInt(100000000) % 4294967295).floor();
 
+  /// Sends an SNMPGET request to the specified [Oid]
   Future<Message> get(Oid oid, {InternetAddress target, int port}) =>
       _get(oid, PduType.GetRequest, target: target, port: port);
 
+  /// Requests the next (lexigraphical) [Oid] after the specified [Oid]
   Future<Message> getNext(Oid oid, {InternetAddress target, int port}) =>
       _get(oid, PduType.GetNextRequest, target: target, port: port);
 
+  /// Walks the entire mib
+  ///
+  /// If [Oid] is provided, the walk will begin at the specified [Oid]
   Stream<Message> walk({Oid oid, InternetAddress target, int port}) {
     StreamController<Message> _ctrl;
     var paused = false;
@@ -162,6 +191,7 @@ class Snmp {
     return _ctrl.stream;
   }
 
+  /// Sends an SNMPSET request with the [Varbind] as a payload
   Future<Message> set(Varbind varbind,
       {InternetAddress target, int port}) async {
     target ??= this.target;

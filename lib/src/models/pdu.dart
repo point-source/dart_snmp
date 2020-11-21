@@ -3,10 +3,14 @@ import 'dart:typed_data';
 import 'package:asn1lib/asn1lib.dart';
 import 'package:dart_snmp/src/models/varbind.dart';
 
+/// An SNMP Protocol Data Unit which contains a list of [Varbind]s and
+/// may (when received as a response) contain error information from an
+/// snmp device
 class Pdu {
   Pdu(this.type, this.requestId, this.varbinds,
       {this.error = PduError.NoError, this.errorIndex = 0});
 
+  /// Parses a list of bytes into a Pdu object
   Pdu.fromBytes(Uint8List bytes) {
     var sequence = ASN1Sequence.fromBytes(bytes);
     assert(sequence.tag > 159 && sequence.tag < 169); // PDU tags
@@ -20,14 +24,25 @@ class Pdu {
     }
   }
 
+  /// The type of snmp request/response for which this Pdu contains data
   PduType type;
+
+  /// The unique identifier for this request
   int requestId;
+
+  /// The type of snmp error (if any) which occured at the target
   PduError error;
+
+  /// Indicates the presence (1) or lack of an error (0)
   int errorIndex;
+
+  /// List of variable bindings [Varbind] which contain an [Oid] and data
   List<Varbind> varbinds;
 
+  /// Converts the Pdu to a (transmittable) list of bytes
   Uint8List get encodedBytes => asAsn1Sequence.encodedBytes;
 
+  /// Converts the Pdu to an [ASN1Sequence] object
   ASN1Sequence get asAsn1Sequence {
     var sequence = ASN1Sequence(tag: type.value);
     sequence.add(ASN1Integer.fromInt(requestId));
@@ -46,6 +61,7 @@ class Pdu {
   }
 }
 
+/// The type of snmp request which is sent to or received from the target device
 class PduType {
   const PduType._internal(this.value);
 
@@ -85,6 +101,8 @@ class PduType {
       other is PduType && (identical(this, other) || value == other.value);
 }
 
+/// The type of error which occurred while the target device was
+/// attempting to respond to the snmp request
 class PduError {
   const PduError._internal(this.value);
 

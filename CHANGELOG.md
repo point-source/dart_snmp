@@ -1,3 +1,7 @@
+## 1.0.2-dev
+
+- Add documentation, upgrade dependencies
+
 ## 1.0.1-dev
 
 - Improve description, pass static analysis, add example main.dart

@@ -6,9 +6,12 @@ import 'package:asn1lib/asn1lib.dart';
 import 'package:dart_snmp/dart_snmp.dart';
 import 'package:dart_snmp/src/models/oid.dart';
 
+/// An SNMP Variable Binding which holds an [Oid] (Object Identifier),
+/// a [tag] which specifies the data type, and a data value to be read or written
 class Varbind {
   Varbind(this.oid, VarbindType type, this.value) : tag = type.value;
 
+  /// Parses a list of bytes into a Varbind object
   Varbind.fromBytes(Uint8List bytes) {
     var sequence = ASN1Sequence.fromBytes(bytes);
     assert(sequence.elements[0].tag == OBJECT_IDENTIFIER);
@@ -17,8 +20,15 @@ class Varbind {
     value = _decodeValue(sequence.elements[1]);
   }
 
+  /// An Object Identifier [Oid] for which this varbind contains a value
   Oid oid;
+
+  /// A number which indicates the type of data contained in this varbind
+  ///
+  /// See [VarbindType]
   int tag;
+
+  /// The data which has been read or is to be writting to the [Oid] on the target device
   dynamic value;
 
   @override
@@ -26,8 +36,10 @@ class Varbind {
 
   String get _typeName => VarbindType.typeNames[tag];
 
+  /// Converts the Varbind to a (transmittable) list of bytes
   Uint8List get encodedBytes => asAsn1Sequence.encodedBytes;
 
+  /// Converts the Varbind to an ASN1Sequence object
   ASN1Sequence get asAsn1Sequence {
     var sequence = ASN1Sequence();
     sequence.add(oid.asAsn1ObjectIdentifier);
