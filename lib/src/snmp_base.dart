@@ -141,7 +141,8 @@ class Snmp {
           if (msg.pdu.error == PduError.NoSuchName) {
             log.finer('Reached end of walk: ${msg.pdu.error}');
             break;
-          } else if (msg.pdu.varbinds[0].type == VarbindType.EndOfMibView) {
+          } else if (msg.pdu.varbinds[0].tag ==
+              VarbindType.EndOfMibView.value) {
             log.finer('Reached end of MIB view');
             break;
           } else {

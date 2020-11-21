@@ -7,75 +7,77 @@ import 'package:dart_snmp/dart_snmp.dart';
 import 'package:dart_snmp/src/models/oid.dart';
 
 class Varbind {
-  Varbind(this.oid, this.type, this.value);
+  Varbind(this.oid, VarbindType type, this.value) : tag = type.value;
 
   Varbind.fromBytes(Uint8List bytes) {
     var sequence = ASN1Sequence.fromBytes(bytes);
     assert(sequence.elements[0].tag == OBJECT_IDENTIFIER);
     oid = Oid.fromBytes(sequence.elements[0].encodedBytes);
-    type = VarbindType.fromInt(sequence.elements[1].tag);
+    tag = sequence.elements[1].tag;
     value = _decodeValue(sequence.elements[1]);
   }
 
   Oid oid;
-  VarbindType type;
+  int tag;
   dynamic value;
 
   @override
-  String toString() => '${oid.identifier} = ${type.name}: $value';
+  String toString() => '${oid.identifier} = $_typeName: $value';
+
+  String get _typeName => VarbindType.typeNames[tag];
 
   Uint8List get encodedBytes => asAsn1Sequence.encodedBytes;
 
   ASN1Sequence get asAsn1Sequence {
     var sequence = ASN1Sequence();
     sequence.add(oid.asAsn1ObjectIdentifier);
-    sequence.add(_encodeValue(type, value));
+    sequence.add(_encodeValue(tag, value));
     return sequence;
   }
 
-  ASN1Object _encodeValue(VarbindType type, dynamic value) {
-    switch (type) {
-      case VarbindType.Boolean:
+  ASN1Object _encodeValue(int tag, dynamic value) {
+    switch (tag) {
+      case BOOLEAN:
         return value as bool
             ? ASN1Boolean.ASN1TrueBoolean
             : ASN1Boolean.ASN1FalseBoolean;
 
-      case VarbindType.Integer:
-      case VarbindType.Counter:
-      case VarbindType.Gauge:
-      case VarbindType.Counter64:
+      case INTEGER:
+      case COUNTER:
+      case GAUGE:
+      case COUNTER_64:
         return ASN1Integer.fromInt(value);
-      case VarbindType.TimeTicks:
+      case TIME_TICKS:
         if (value is Duration) {
           return ASN1Integer.fromInt(value.inMilliseconds ~/ 10);
         }
         return ASN1Integer.fromInt(value);
 
-      case VarbindType.OctetString:
+      case OCTET_STRING:
         return ASN1OctetString(value);
 
-      case VarbindType.Null:
+      case NULL:
         return ASN1Null();
 
-      case VarbindType.OID:
+      case OID:
         return ASN1ObjectIdentifier.fromComponentString(value);
 
-      case VarbindType.IpAddress:
+      case IP_ADDRESS:
         if (value is InternetAddress) {
           return ASN1IpAddress.fromComponentString(value.address);
         }
         return ASN1IpAddress.fromComponentString(value);
 
-      case VarbindType.Opaque:
+      case OPAQUE:
         throw Exception('Opaque type not yet implemented');
 
-      case VarbindType.NoSuchObject:
+      case NO_SUCH_OBJECT:
         throw Exception('NoSuchObject type not yet implemented');
 
-      case VarbindType.NoSuchInstance:
+      case NO_SUCH_INSTANCE:
         throw Exception('NoSuchInstance type not yet implemented');
 
-      case VarbindType.EndOfMibView:
+      case END_OF_MIB_VIEW:
         throw Exception('EndOfMibView not yet implemented');
 
       default:
@@ -84,43 +86,43 @@ class Varbind {
   }
 
   dynamic _decodeValue(ASN1Object object) {
-    switch (type) {
-      case VarbindType.Boolean:
+    switch (tag) {
+      case BOOLEAN:
         return (object as ASN1Boolean).booleanValue;
 
-      case VarbindType.Integer:
-      case VarbindType.Counter:
-      case VarbindType.Gauge:
-      case VarbindType.Counter64:
+      case INTEGER:
+      case COUNTER:
+      case GAUGE:
+      case COUNTER_64:
         return ASN1Integer.fromBytes(object.encodedBytes).intValue;
 
-      case VarbindType.TimeTicks:
+      case TIME_TICKS:
         return Duration(
             milliseconds:
                 ASN1Integer.fromBytes(object.encodedBytes).intValue * 10);
 
-      case VarbindType.OctetString:
+      case OCTET_STRING:
         if (object.valueBytes().any((e) => e > 127)) {
           // Not Ascii
           return base64Encode(object.valueBytes());
         }
         return (object as ASN1OctetString).stringValue;
 
-      case VarbindType.Null:
+      case NULL:
         return null;
 
-      case VarbindType.OID:
+      case OID:
         return (object as ASN1ObjectIdentifier).identifier;
 
-      case VarbindType.IpAddress:
+      case IP_ADDRESS:
         return ASN1IpAddress.fromBytes(object.encodedBytes).stringValue;
 
-      case VarbindType.Opaque:
+      case OPAQUE:
         return object.valueBytes();
 
-      case VarbindType.NoSuchObject:
-      case VarbindType.NoSuchInstance:
-      case VarbindType.EndOfMibView:
+      case NO_SUCH_OBJECT:
+      case NO_SUCH_INSTANCE:
+      case END_OF_MIB_VIEW:
         return object;
 
       default:
@@ -130,69 +132,59 @@ class Varbind {
 }
 
 class VarbindType {
-  const VarbindType._internal(this.value);
-
-  VarbindType.fromInt(this.value);
+  const VarbindType.fromInt(this.value);
 
   final int value;
 
-  static const Map<int, String> _snmpTypes = <int, String>{
-    1: 'Boolean',
-    2: 'Integer',
-    4: 'OctetString',
-    5: 'Null',
-    6: 'OID',
-    64: 'IpAddress',
-    65: 'Counter32',
-    66: 'Gauge32',
-    67: 'TimeTicks',
-    68: 'Opaque',
-    70: 'Counter64',
-    128: 'NoSuchObject',
-    129: 'NoSuchInstance',
-    130: 'EndOfMibView',
-  };
-
-  static const Map<int, Type> _dartTypes = <int, Type>{
-    1: bool, // Boolean
-    2: int, // Integer
-    4: String, // OctetString
-    5: null, // Null
-    6: String, // OID
-    64: String, // IpAddress
-    65: int, // Counter32
-    66: int, // Gauge32
-    67: int, // TimeTicks
-    68: Uint8List, // Opaque
-    70: int, // Counter64
-    128: int, // NoSuchObject
-    129: int, // NoSuchInstance
-    130: int, // EndOfMibView
+  static const Map<int, String> typeNames = <int, String>{
+    BOOLEAN: 'Boolean',
+    INTEGER: 'Integer',
+    OCTET_STRING: 'OctetString',
+    NULL: 'Null',
+    OID: 'OID',
+    IP_ADDRESS: 'IpAddress',
+    COUNTER: 'Counter32',
+    GAUGE: 'Gauge32',
+    TIME_TICKS: 'TimeTicks',
+    OPAQUE: 'Opaque',
+    COUNTER_64: 'Counter64',
+    NO_SUCH_OBJECT: 'NoSuchObject',
+    NO_SUCH_INSTANCE: 'NoSuchInstance',
+    END_OF_MIB_VIEW: 'EndOfMibView',
   };
 
   @override
   String toString() => 'VarbindType.$name ($value)';
 
-  String get name => _snmpTypes[value];
+  String get name => typeNames[value];
 
-  Type get type => _dartTypes[value];
-
-  static const Boolean = VarbindType._internal(1);
-  static const Integer = VarbindType._internal(2);
-  static const OctetString = VarbindType._internal(4);
-  static const Null = VarbindType._internal(5);
-  static const OID = VarbindType._internal(6);
-  static const IpAddress = VarbindType._internal(64);
-  static const Counter = VarbindType._internal(65);
-  static const Gauge = VarbindType._internal(66);
-  static const TimeTicks = VarbindType._internal(67);
-  static const Opaque = VarbindType._internal(68);
-  static const Counter64 = VarbindType._internal(70);
-  static const NoSuchObject = VarbindType._internal(128);
-  static const NoSuchInstance = VarbindType._internal(129);
-  static const EndOfMibView = VarbindType._internal(130);
-
-  @override
-  bool operator ==(Object other) =>
-      other is VarbindType && (identical(this, other) || value == other.value);
+  static const Boolean = VarbindType.fromInt(BOOLEAN);
+  static const Integer = VarbindType.fromInt(INTEGER);
+  static const OctetString = VarbindType.fromInt(OCTET_STRING);
+  static const Null = VarbindType.fromInt(NULL);
+  static const Oid = VarbindType.fromInt(OID);
+  static const IpAddress = VarbindType.fromInt(IP_ADDRESS);
+  static const Counter = VarbindType.fromInt(COUNTER);
+  static const Gauge = VarbindType.fromInt(GAUGE);
+  static const TimeTicks = VarbindType.fromInt(TIME_TICKS);
+  static const Opaque = VarbindType.fromInt(OPAQUE);
+  static const Counter64 = VarbindType.fromInt(COUNTER_64);
+  static const NoSuchObject = VarbindType.fromInt(NO_SUCH_OBJECT);
+  static const NoSuchInstance = VarbindType.fromInt(NO_SUCH_INSTANCE);
+  static const EndOfMibView = VarbindType.fromInt(END_OF_MIB_VIEW);
 }
+
+const BOOLEAN = 1;
+const INTEGER = 2;
+const OCTET_STRING = 4;
+const NULL = 5;
+const OID = 6;
+const IP_ADDRESS = 64;
+const COUNTER = 65;
+const GAUGE = 66;
+const TIME_TICKS = 67;
+const OPAQUE = 68;
+const COUNTER_64 = 70;
+const NO_SUCH_OBJECT = 128;
+const NO_SUCH_INSTANCE = 129;
+const END_OF_MIB_VIEW = 130;
