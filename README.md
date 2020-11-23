@@ -25,3 +25,10 @@ void main() async {
 Please file feature requests and bugs at the [issue tracker][tracker].
 
 [tracker]: https://github.com/point-source/dart_snmp/issues
+
+## Acknowledgments
+
+Much of the code within this library has been ported from, or inspired by the
+javascript/node [net-snmp] library
+
+[net-snmp]: https://www.npmjs.com/package/net-snmp

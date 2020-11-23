@@ -30,7 +30,10 @@ class Message {
     }
   }
 
+  /// Describes the SNMP version number of this message
   SnmpVersion version;
+
+  /// A user-defined string used to provide a basic level of "security" between devices
   String community;
 
   /// A Protocol Data Unit which contains a list of [Varbind]s

@@ -27,7 +27,7 @@ class Pdu {
   /// The type of snmp request/response for which this Pdu contains data
   PduType type;
 
-  /// The unique identifier for this request
+  /// Unique identifier used to match response PDUs to request PDUs
   int requestId;
 
   /// The type of snmp error (if any) which occured at the target
