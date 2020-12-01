@@ -6,4 +6,4 @@ export 'src/models/oid.dart';
 export 'src/models/varbind.dart';
 export 'src/models/pdu.dart';
 export 'src/models/message.dart';
-export 'src/models/authentication.dart';
+export 'src/models/user.dart';

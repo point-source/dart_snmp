@@ -11,6 +11,7 @@ environment:
 dependencies:
   logging: ^0.11.4
   asn1lib: ^0.8.1
+  pointycastle: ^2.0.0
 
 dev_dependencies:
   pedantic: ^1.9.0

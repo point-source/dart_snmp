@@ -1,40 +1,64 @@
-/// A user credential for authenticating, encrypting, and decrypting
-/// SNMP v3 [Message]s
-class User {
-  User(this.name, this.level,
-      {this.authProtocol = AuthProtocol.sha,
-      this.authKey,
-      this.privProtocol = PrivProtocol.des,
-      this.privKey});
+import 'dart:typed_data';
 
-  /// Username
-  String name;
+import 'package:pointycastle/export.dart';
 
-  /// Specifies whether the credential requires auth, privacy, or both
-  SecurityLevel level = SecurityLevel.authNoPriv;
+class Authentication {
+  Authentication(this.authProtocol, this.authKey, this.engineId);
 
-  /// The type of authorization security to use (md5 or sha)
-  AuthProtocol authProtocol = AuthProtocol.sha;
+  /// The type of authorization protocol to use (md5 or sha) when using SNMP v3
+  AuthProtocol authProtocol;
 
-  /// The key used to authenticate the user
+  /// A user's secret key to be used when calculating a digest.
+  //
+  // This will be expanded to 16 octets for MD5 or 20 octets for SHA-1
+  // as defined in RFC 3414 sections 6 and 7, respectively
   String authKey;
 
-  /// The type of privacy (encryption) to use (des or aes)
-  PrivProtocol privProtocol = PrivProtocol.des;
+  /// Specifies the authoritative SNMP engine for [Message]s sent
+  //
+  // Defined in RFC 3411
+  String engineId;
 
-  /// The key used to encrypt messages
-  String privKey;
+  /// Converts the authKey from a String to a byte list
+  Uint8List get authKeyBytes => Uint8List.fromList(authKey.codeUnits);
+
+  /// Converts the engineId from a String to a byte list
+  Uint8List get engineIdBytes => Uint8List.fromList(engineId.codeUnits);
+
+  Uint8List get privateLocalizedKey {
+    final buf = _expandAuthKey(authKeyBytes);
+    final d =
+        authProtocol == AuthProtocol.usmHMACMD5 ? MD5Digest() : SHA1Digest();
+    final first = d.process(buf);
+    final bytes = BytesBuilder();
+    bytes.add(first);
+    bytes.add(engineIdBytes);
+    bytes.add(first);
+    return d.process(bytes.takeBytes());
+  }
+
+  /// Expands user-provided secret key to 16 (MD5) or 20 (SHA) octets depending
+  /// on the authentication protocol selected
+  Uint8List _expandAuthKey(Uint8List password, {int size = 1024 * 1024}) {
+    final passwordLength = password.length;
+    final remainder = size % passwordLength;
+    final whole = size - remainder;
+
+    final buf = Uint8List(size);
+    for (var i = 0; i < whole; i += passwordLength) {
+      buf.setRange(i, i + passwordLength, password);
+    }
+    buf.setRange(whole, size, password);
+
+    return buf;
+  }
+
+  Uint8List get authParams {}
+
+  Uint8List calculateDigest() {}
 }
 
-/// The level of security which the snmp v3 credential requires
-enum SecurityLevel {
-  noAuthNoPriv,
-  authNoPriv,
-  authPriv,
-}
-
-/// The type of authorization security to use (md5 or sha) when using snmp v3
-enum AuthProtocol { md5, sha }
-
-/// The type of privacy (encryption) to use (des or aes) when using snmp v3
-enum PrivProtocol { des, aes }
+/// The type of authorization protocol to use (md5 or sha) when using SNMP v3
+//
+// Defined in RFC 3414 sections 6 and 7, respectively
+enum AuthProtocol { usmHMACMD5, usmHMACSHA }

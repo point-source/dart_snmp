@@ -1,7 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:asn1lib/asn1lib.dart';
-import 'package:dart_snmp/src/models/authentication.dart';
+import 'package:dart_snmp/src/models/encryption.dart';
+import 'package:dart_snmp/src/models/user.dart';
 import 'package:dart_snmp/src/models/engine.dart';
 import 'package:dart_snmp/src/models/message.dart';
 import 'package:dart_snmp/src/models/pdu.dart';
@@ -51,21 +52,36 @@ class MessageV3 {
   /// A Protocol Data Unit which contains a list of [Varbind]s
   Pdu pdu;
 
+  Encryption encryption;
+
   Uint8List get encodedBytes => asAsn1Sequence.encodedBytes;
 
   ASN1Sequence get asAsn1Sequence {
     var sequence = ASN1Sequence();
     sequence.add(ASN1Integer.fromInt(SnmpVersion.V3.value));
+    // Header
     sequence.add(ASN1Integer.fromInt(messageId));
     sequence.add(ASN1Integer.fromInt(engine.maxMessageSize));
     sequence.add(ASN1Integer.fromInt(_flags));
     sequence.add(ASN1Integer.fromInt(securityModel));
+    // Security params
     sequence.add(ASN1OctetString.fromBytes(engine.engineId));
     sequence.add(ASN1Integer.fromInt(engine.engineBoots));
     sequence.add(ASN1Integer.fromInt(engine.engineTime));
     sequence.add(ASN1OctetString(user.name));
-    // TODO(andrew): auth / privacy, etc
-    sequence.add(pdu.asAsn1Sequence);
+    sequence.add(ASN1OctetString(authParams));
+    sequence.add(ASN1OctetString(privParams));
+    // PDU sequence
+    sequence.add(ASN1OctetString(engine.engineId));
+    // TODO (andrew): Add context / forwarding support
+    // TODO (andrew): auth / privacy, etc
+    if (_private == 1) {
+      var r = encryption.encryptPdu(pdu);
+      sequence.add(ASN1OctetString.fromBytes(r.encryptedPdu));
+    } else {
+      sequence.add(pdu.asAsn1Sequence);
+    }
+
     return sequence;
   }
 

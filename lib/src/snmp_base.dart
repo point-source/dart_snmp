@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:dart_snmp/src/models/authentication.dart';
+import 'package:dart_snmp/src/models/user.dart';
 import 'package:dart_snmp/src/models/message.dart';
 import 'package:dart_snmp/src/models/oid.dart';
 import 'package:dart_snmp/src/models/pdu.dart';
