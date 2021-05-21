@@ -1,3 +1,7 @@
+## 2.0.0-dev
+
+- Nullsafety
+
 ## 1.0.2-dev
 
 - Add documentation, upgrade dependencies
