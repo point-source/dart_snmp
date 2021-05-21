@@ -21,12 +21,12 @@ class Varbind {
   }
 
   /// An Object Identifier [Oid] for which this varbind contains a value
-  Oid oid;
+  late Oid oid;
 
   /// A number which indicates the type of data contained in this varbind
   ///
   /// See [VarbindType]
-  int tag;
+  late int tag;
 
   /// The data which has been read or is to be writting to the [Oid] on the target device
   dynamic value;
@@ -34,7 +34,7 @@ class Varbind {
   @override
   String toString() => '${oid.identifier} = $_typeName: $value';
 
-  String get _typeName => VarbindType.typeNames[tag];
+  String get _typeName => VarbindType.typeNames[tag] ?? 'Unknown';
 
   /// Converts the Varbind to a (transmittable) list of bytes
   Uint8List get encodedBytes => asAsn1Sequence.encodedBytes;
@@ -168,7 +168,7 @@ class VarbindType {
   @override
   String toString() => 'VarbindType.$name ($value)';
 
-  String get name => typeNames[value];
+  String get name => typeNames[value] ?? 'Unknown';
 
   static const Boolean = VarbindType.fromInt(BOOLEAN);
   static const Integer = VarbindType.fromInt(INTEGER);

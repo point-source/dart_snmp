@@ -11,9 +11,14 @@ class Pdu {
       {this.error = PduError.NoError, this.errorIndex = 0});
 
   /// Parses a list of bytes into a Pdu object
-  Pdu.fromBytes(Uint8List bytes) {
+  static Pdu fromBytes(Uint8List bytes) {
     var sequence = ASN1Sequence.fromBytes(bytes);
     assert(sequence.tag > 159 && sequence.tag < 169); // PDU tags
+    PduType? type;
+    int? requestId;
+    PduError? error;
+    int? errorIndex;
+    List<Varbind>? varbinds;
     type = PduType._internal(sequence.tag);
     requestId = (sequence.elements[0] as ASN1Integer).intValue;
     error = PduError.fromInt((sequence.elements[1] as ASN1Integer).intValue);
@@ -22,6 +27,7 @@ class Pdu {
     for (var v in (sequence.elements[3] as ASN1Sequence).elements) {
       varbinds.add(Varbind.fromBytes(v.encodedBytes));
     }
+    return Pdu(type, requestId, varbinds, error: error, errorIndex: errorIndex);
   }
 
   /// The type of snmp request/response for which this Pdu contains data
@@ -82,7 +88,7 @@ class PduType {
   @override
   String toString() => 'PduType.$name ($value)';
 
-  String get name => _types[value];
+  String get name => _types[value] ?? 'Unknown';
 
   static bool contains(int i) => _types.containsKey(i);
 
@@ -135,7 +141,7 @@ class PduError {
   @override
   String toString() => 'PduError.$name ($value)';
 
-  String get name => _errors[value];
+  String get name => _errors[value] ?? 'Unknown';
 
   static const NoError = PduError._internal(0);
   static const TooBig = PduError._internal(1);

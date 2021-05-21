@@ -3,9 +3,9 @@
 class User {
   User(this.name, this.level,
       {this.authProtocol = AuthProtocol.sha,
-      this.authKey,
+      this.authKey = '',
       this.privProtocol = PrivProtocol.des,
-      this.privKey});
+      this.privKey = ''});
 
   /// Username
   String name;

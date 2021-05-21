@@ -9,8 +9,11 @@ class Message {
   Message(this.version, this.community, this.pdu);
 
   /// Parses a list of bytes into a Message object
-  Message.fromBytes(Uint8List bytes) {
+  static Message fromBytes(Uint8List bytes) {
     var sequence = ASN1Sequence.fromBytes(bytes);
+    SnmpVersion? version;
+    String? community;
+    Pdu? pdu;
     assert(sequence.tag == 48); // Message tag
     for (var o in sequence.elements) {
       switch (o.tag) {
@@ -28,6 +31,10 @@ class Message {
           }
       }
     }
+    if (version == null || community == null || pdu == null) {
+      throw Exception('Could not parse incoming sequence into Message object');
+    }
+    return Message(version, community, pdu);
   }
 
   SnmpVersion version;
@@ -66,7 +73,7 @@ class SnmpVersion {
   @override
   String toString() => 'SnmpVersion.$name ($value)';
 
-  String get name => _versions[value];
+  String get name => _versions[value] ?? 'Unknown';
 
   static const V1 = SnmpVersion._internal(0);
   static const V2c = SnmpVersion._internal(1);

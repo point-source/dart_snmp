@@ -8,17 +8,14 @@ class Oid {
   Oid(this._oid);
 
   /// Parses a period or comma delimited string of octets into an Oid object
-  Oid.fromString(String str) {
-    str = str.replaceAll(',', '.');
-    _oid = ASN1ObjectIdentifier.fromComponentString(str);
-  }
+  Oid.fromString(String str)
+      : _oid =
+            ASN1ObjectIdentifier.fromComponentString(str.replaceAll(',', '.'));
 
   /// Parses a list of bytes into a Oid object
-  Oid.fromBytes(Uint8List bytes) {
-    _oid = ASN1ObjectIdentifier.fromBytes(bytes);
-  }
+  Oid.fromBytes(Uint8List bytes) : _oid = ASN1ObjectIdentifier.fromBytes(bytes);
 
-  ASN1ObjectIdentifier _oid;
+  final ASN1ObjectIdentifier _oid;
 
   ASN1ObjectIdentifier get asAsn1ObjectIdentifier => _oid;
 
@@ -26,7 +23,7 @@ class Oid {
   Uint8List get encodedBytes => _oid.encodedBytes;
 
   /// Provides a period-delimited string of Oid octets
-  String get identifier => _oid.identifier;
+  String? get identifier => _oid.identifier;
 
   @override
   String toString() => 'Oid($identifier)';
