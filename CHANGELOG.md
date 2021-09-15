@@ -1,3 +1,7 @@
+## 2.0.0
+
+- Close method now logs instead of throws (#2)
+
 ## 2.0.0-dev
 
 - Nullsafety
