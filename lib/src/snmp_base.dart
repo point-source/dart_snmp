@@ -161,7 +161,7 @@ class Snmp {
   void _onClose() {
     _cancelAllRequests();
     socket.close();
-    throw Exception('Socket forcibly closed. All requests cleared.');
+    log.info('Socket forcibly closed. All requests cleared.');
   }
 
   void _onError(Object error) {
