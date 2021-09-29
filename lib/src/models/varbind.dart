@@ -28,7 +28,7 @@ class Varbind {
   /// See [VarbindType]
   late int tag;
 
-  /// The data which has been read or is to be writting to the [Oid] on the target device
+  /// The data which has been read or is to be written to the [Oid] on the target device
   dynamic value;
 
   @override
