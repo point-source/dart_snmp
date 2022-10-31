@@ -58,7 +58,7 @@ class Varbind {
       case COUNTER:
       case GAUGE:
       case COUNTER_64:
-        return ASN1Integer.fromInt(value);
+        return ASN1Integer.fromInt(value, tag: tag);
       case TIME_TICKS:
         if (value is Duration) {
           return ASN1Integer.fromInt(value.inMilliseconds ~/ 10);
