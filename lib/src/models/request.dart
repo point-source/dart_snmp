@@ -41,8 +41,9 @@ class Request {
     if (msg.pdu.error.value > 0) {
       completeError(Exception(
           'Snmp Pdu Error on ${message.pdu.varbinds[0].oid.identifier}: ${msg.pdu.error.name}'));
+    } else {
+      onResponse(msg);
     }
-    onResponse(msg);
   }
 
   /// Completes this request by returning an error to the [onError] callback function
