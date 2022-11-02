@@ -6,6 +6,8 @@ import 'package:dart_snmp/src/models/pdu.dart';
 /// An SNMP v1 or v2c Message which contains the credential information
 /// necessary to package a [Pdu] to be sent to a target device
 class Message {
+  /// An SNMP v1 or v2c Message which contains the credential information
+  /// necessary to package a [Pdu] to be sent to a target device
   Message(this.version, this.community, this.pdu);
 
   /// Parses a list of bytes into a Message object
@@ -34,10 +36,15 @@ class Message {
     if (version == null || community == null || pdu == null) {
       throw Exception('Could not parse incoming sequence into Message object');
     }
+
     return Message(version, community, pdu);
   }
 
+  /// The SNMP protocol version used to encode/decode this message
   SnmpVersion version;
+
+  /// An arbitrary user-defined string used to provide separation between
+  /// multiple snmp configurations/deployments
   String community;
 
   /// A Protocol Data Unit which contains a list of [Varbind]s
@@ -52,6 +59,7 @@ class Message {
     sequence.add(ASN1Integer.fromInt(version.value));
     sequence.add(ASN1OctetString(community));
     sequence.add(pdu.asAsn1Sequence);
+
     return sequence;
   }
 }
@@ -60,8 +68,11 @@ class Message {
 class SnmpVersion {
   const SnmpVersion._internal(this.value);
 
+  /// Returns the corresponding [SnmpVersion] matched to a given integer value
+  /// for encoding/decoding
   SnmpVersion.fromInt(this.value);
 
+  /// Integer representation of the SNMP version
   final int value;
 
   static const Map<int, String> _versions = <int, String>{
@@ -73,9 +84,15 @@ class SnmpVersion {
   @override
   String toString() => 'SnmpVersion.$name ($value)';
 
+  /// Human-friendly snmp version name
   String get name => _versions[value] ?? 'Unknown';
 
-  static const V1 = SnmpVersion._internal(0);
-  static const V2c = SnmpVersion._internal(1);
-  static const V3 = SnmpVersion._internal(3);
+  /// Version 1
+  static const v1 = SnmpVersion._internal(0);
+
+  /// Version 2c
+  static const v2c = SnmpVersion._internal(1);
+
+  /// Version 3
+  static const v3 = SnmpVersion._internal(3);
 }

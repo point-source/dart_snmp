@@ -5,6 +5,8 @@ import 'package:asn1lib/asn1lib.dart';
 /// An Object Identifier which corresponds to a specific value or
 /// parameter on a target device
 class Oid {
+  /// An Object Identifier which corresponds to a specific value or
+  /// parameter on a target device
   Oid(this._oid);
 
   /// Parses a period or comma delimited string of octets into an Oid object
@@ -17,6 +19,7 @@ class Oid {
 
   final ASN1ObjectIdentifier _oid;
 
+  /// Get Oid as an [ASN1ObjectIdentifier]
   ASN1ObjectIdentifier get asAsn1ObjectIdentifier => _oid;
 
   /// Converts an Oid object into a (transmittable) list of bytes

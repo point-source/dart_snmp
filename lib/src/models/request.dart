@@ -7,8 +7,19 @@ import 'package:dart_snmp/src/models/message.dart';
 /// This request contains an SNMP [Message] with one or more
 /// [Varbind]s encapsulated within a [Pdu]
 class Request {
-  Request(this.target, this.port, this.message, this.timeout, this.retries,
-      this.onResponse, this.onError);
+  /// An SNMP Request which will be sent to a [target] address
+  ///
+  /// This request contains an SNMP [Message] with one or more
+  /// [Varbind]s encapsulated within a [Pdu]
+  Request(
+    this.target,
+    this.port,
+    this.message,
+    this.timeout,
+    this.retries,
+    this.onResponse,
+    this.onError,
+  );
 
   /// The address of the target device where this request will be sent
   final InternetAddress target;
@@ -40,13 +51,15 @@ class Request {
   void complete(Message msg) {
     if (msg.pdu.error.value > 0) {
       completeError(Exception(
-          'Snmp Pdu Error on ${message.pdu.varbinds[0].oid.identifier}: ${msg.pdu.error.name}'));
+        'Snmp Pdu Error on ${message.pdu.varbinds[0].oid.identifier}: ${msg.pdu.error.name}',
+      ));
     } else {
       onResponse(msg);
     }
   }
 
-  /// Completes this request by returning an error to the [onError] callback function
+  /// Completes this request by returning an error
+  /// to the [onError] callback function
   void completeError(Exception error) => onError(error);
 
   @override

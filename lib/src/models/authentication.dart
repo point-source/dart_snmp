@@ -1,11 +1,16 @@
 /// A user credential for authenticating, encrypting, and decrypting
 /// SNMP v3 [Message]s
 class User {
-  User(this.name, this.level,
-      {this.authProtocol = AuthProtocol.sha,
-      this.authKey = '',
-      this.privProtocol = PrivProtocol.des,
-      this.privKey = ''});
+  /// A user credential for authenticating, encrypting, and decrypting
+  /// SNMP v3 [Message]s
+  User(
+    this.name,
+    this.level, {
+    this.authProtocol = AuthProtocol.sha,
+    this.authKey = '',
+    this.privProtocol = PrivProtocol.des,
+    this.privKey = '',
+  });
 
   /// Username
   String name;
@@ -28,13 +33,33 @@ class User {
 
 /// The level of security which the snmp v3 credential requires
 enum SecurityLevel {
+  /// Authenticates with a username
   noAuthNoPriv,
+
+  /// Provides HMAC MD5 or SHA algorithms for authentication
   authNoPriv,
+
+  /// Provides HMAC MD5 or SHA algorithms for authentication
+  ///
+  /// Provides DES 56-bit encryption in addition to authentication
+  /// based on the CBC-DES (DES-56) standard
   authPriv,
 }
 
 /// The type of authorization security to use (md5 or sha) when using snmp v3
-enum AuthProtocol { md5, sha }
+enum AuthProtocol {
+  /// MD5 message-digest algorithm
+  md5,
+
+  /// Secure Hash Algorithm
+  sha,
+}
 
 /// The type of privacy (encryption) to use (des or aes) when using snmp v3
-enum PrivProtocol { des, aes }
+enum PrivProtocol {
+  /// Data Encryption Standard
+  des,
+
+  /// Advanced Encryption Standard
+  aes,
+}

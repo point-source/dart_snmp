@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:dart_snmp/dart_snmp.dart';
-import 'package:dart_snmp/src/models/varbind.dart';
 
 void main() async {
   // Starting a session
@@ -15,7 +14,7 @@ void main() async {
   // Writing a parameter
   var varbind = Varbind(
     oid,
-    VarbindType.OctetString,
+    VarbindType.octetString,
     'New system description',
   ); // create payload
   await session.set(varbind); // send new system description to target

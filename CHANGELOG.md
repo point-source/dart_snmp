@@ -1,3 +1,8 @@
+## 3.0.0
+
+- Resolve lint warnings (renamed constants to have lower camelcase, slightly breaking the api)
+- Add way more documentation (especially around data types and tags)
+
 ## 2.1.0
 
 - Fix #13: Tags are not preserved when Gauge and Counter types are encoded (thanks lmmfranco)

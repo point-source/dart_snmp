@@ -5,9 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "workspace",
+            "name": "Dart (example/main.dart)",
+            "type": "dart",
             "request": "launch",
-            "type": "dart"
+            "program": "example/main.dart"
         }
     ]
 }

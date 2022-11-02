@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -9,6 +11,8 @@ import 'package:dart_snmp/src/models/oid.dart';
 /// An SNMP Variable Binding which holds an [Oid] (Object Identifier),
 /// a [tag] which specifies the data type, and a data value to be read or written
 class Varbind {
+  /// An SNMP Variable Binding which holds an [Oid] (Object Identifier),
+  /// a [tag] which specifies the data type, and a data value to be read or written
   Varbind(this.oid, VarbindType type, this.value) : tag = type.value;
 
   /// Parses a list of bytes into a Varbind object
@@ -44,6 +48,7 @@ class Varbind {
     var sequence = ASN1Sequence();
     sequence.add(oid.asAsn1ObjectIdentifier);
     sequence.add(_encodeValue(tag, value));
+
     return sequence;
   }
 
@@ -110,8 +115,9 @@ class Varbind {
 
       case TIME_TICKS:
         return Duration(
-            milliseconds:
-                ASN1Integer.fromBytes(object.encodedBytes).intValue * 10);
+          milliseconds:
+              ASN1Integer.fromBytes(object.encodedBytes).intValue * 10,
+        );
 
       case OCTET_STRING:
         if (object.valueBytes().any((e) => e > 127)) {
@@ -143,11 +149,16 @@ class Varbind {
   }
 }
 
+/// The type of data contained within the Varbind
 class VarbindType {
+  /// Returns a [VarbindType] corresponding to the provided integer value
+  /// from a decoded Varbind
   const VarbindType.fromInt(this.value);
 
+  /// Integer representation of the Varbind type
   final int value;
 
+  /// Map of Varbind type integer values to human-readable names
   static const Map<int, String> typeNames = <int, String>{
     BOOLEAN: 'Boolean',
     INTEGER: 'Integer',
@@ -168,35 +179,148 @@ class VarbindType {
   @override
   String toString() => 'VarbindType.$name ($value)';
 
+  /// Human-readable name of the Varbind type
   String get name => typeNames[value] ?? 'Unknown';
 
-  static const Boolean = VarbindType.fromInt(BOOLEAN);
-  static const Integer = VarbindType.fromInt(INTEGER);
-  static const OctetString = VarbindType.fromInt(OCTET_STRING);
-  static const Null = VarbindType.fromInt(NULL);
-  static const Oid = VarbindType.fromInt(OID);
-  static const IpAddress = VarbindType.fromInt(IP_ADDRESS);
-  static const Counter = VarbindType.fromInt(COUNTER);
-  static const Gauge = VarbindType.fromInt(GAUGE);
-  static const TimeTicks = VarbindType.fromInt(TIME_TICKS);
-  static const Opaque = VarbindType.fromInt(OPAQUE);
-  static const Counter64 = VarbindType.fromInt(COUNTER_64);
-  static const NoSuchObject = VarbindType.fromInt(NO_SUCH_OBJECT);
-  static const NoSuchInstance = VarbindType.fromInt(NO_SUCH_INSTANCE);
-  static const EndOfMibView = VarbindType.fromInt(END_OF_MIB_VIEW);
+  /// A true or false value
+  static const boolean = VarbindType.fromInt(BOOLEAN);
+
+  /// A value whose range may include both positive and negative numbers
+  static const integer = VarbindType.fromInt(INTEGER);
+
+  /// Used to specify octets of binary or textual information.
+  ///
+  /// While SMIv1 doesn't limit the number of octets, SMIv2 specifies a limit of
+  /// 65535 octets. A size may be specified which can be fixed,
+  /// varying, or multiple ranges.
+  static const octetString = VarbindType.fromInt(OCTET_STRING);
+
+  /// Typically used as a placeholder when the value is not known.
+  ///
+  /// For example, when performing a GET request where you need to provide
+  /// a varbind type but do not have any value to send since you are
+  /// intending to retrieve a value instead.
+  static const nullValue = VarbindType.fromInt(NULL);
+
+  /// Used to identify a type that has an assigned object identifier value
+  static const oid = VarbindType.fromInt(OID);
+
+  /// This type is used to specify an IPv4 address as a string of 4 octets
+  static const ipAddress = VarbindType.fromInt(IP_ADDRESS);
+
+  /// Used to specify a value which represents a count.
+  ///
+  /// The range is 0 to 4,294,967,295.
+  static const counter = VarbindType.fromInt(COUNTER);
+
+  /// A non-negative integer which may increase or decrease,
+  /// but which holds at the maximum or minimum value specified in the
+  /// range when the actual value goes over or below the range, respectively
+  static const gauge = VarbindType.fromInt(GAUGE);
+
+  /// Used to specify the elapsed time between two events,
+  /// in units of hundredth of a second. Range is 0 to 2e32 - 1.
+  static const timeTicks = VarbindType.fromInt(TIME_TICKS);
+
+  /// Used to specify octets of binary information.
+  ///
+  /// SMIv2 specifies a limit of 65535 octets while there is no limit in SMIv1.
+  /// A size may be specified which can be fixed, varying, or multiple ranges.
+  ///
+  /// A value of this type must be an encapsulation of ASN.1 BER encoded value.
+  static const opaque = VarbindType.fromInt(OPAQUE);
+
+  /// Similar to Counter32, except the range is now (0 to 2e64  -1).
+  ///
+  /// This type may only be used when a 32-bit counter rollover could occur in
+  /// less than an hour. Otherwise, the Counter32 type must be used.
+  ///
+  ///  Since this type is not available in SNMPv1, it may only be used when
+  /// backwards compatibility is not a requirement.
+  static const counter64 = VarbindType.fromInt(COUNTER_64);
+
+  /// NoSuchObject is returned by the agent in response to a
+  /// request when the requested object does not exist in its MIB. (SNMP v2)
+  ///
+  /// This value is returned as a with data of length 0
+  static const noSuchObject = VarbindType.fromInt(NO_SUCH_OBJECT);
+
+  /// The requested instance of the object does not exist (SNMP v2)
+  ///
+  /// For example: requesting data from port 9 of an 8-port switch
+  static const noSuchInstance = VarbindType.fromInt(NO_SUCH_INSTANCE);
+
+  /// Signifies the end of an SNMP "walk" or "get-next" (SNMP v2)
+  static const endOfMibView = VarbindType.fromInt(END_OF_MIB_VIEW);
 }
 
+/// A true or false value
 const BOOLEAN = 1;
+
+/// A value whose range may include both positive and negative numbers
 const INTEGER = 2;
+
+/// Used to specify octets of binary or textual information.
+///
+/// While SMIv1 doesn't limit the number of octets, SMIv2 specifies a limit of
+/// 65535 octets. A size may be specified which can be fixed,
+/// varying, or multiple ranges.
 const OCTET_STRING = 4;
+
+/// Typically used as a placeholder when the value is not known.
+///
+/// For example, when performing a GET request where you need to provide
+/// a varbind type but do not have any value to send since you are
+/// intending to retrieve a value instead.
 const NULL = 5;
+
+/// Used to identify a type that has an assigned object identifier value
 const OID = 6;
+
+/// This type is used to specify an IPv4 address as a string of 4 octets
 const IP_ADDRESS = 64;
+
+/// Used to specify a value which represents a count.
+///
+/// The range is 0 to 4,294,967,295.
 const COUNTER = 65;
+
+/// A non-negative integer which may increase or decrease,
+/// but which holds at the maximum or minimum value specified in the
+/// range when the actual value goes over or below the range, respectively
 const GAUGE = 66;
+
+/// Used to specify the elapsed time between two events,
+/// in units of hundredth of a second. Range is 0 to 2e32 - 1.
 const TIME_TICKS = 67;
+
+/// Used to specify octets of binary information.
+///
+/// SMIv2 specifies a limit of 65535 octets while there is no limit in SMIv1.
+/// A size may be specified which can be fixed, varying, or multiple ranges.
+///
+/// A value of this type must be an encapsulation of ASN.1 BER encoded value.
 const OPAQUE = 68;
+
+/// Similar to Counter32, except the range is now (0 to 2e64  -1).
+///
+/// This type may only be used when a 32-bit counter rollover could occur in
+/// less than an hour. Otherwise, the Counter32 type must be used.
+///
+///  Since this type is not available in SNMPv1, it may only be used when
+/// backwards compatibility is not a requirement.
 const COUNTER_64 = 70;
+
+/// NoSuchObject is returned by the agent in response to a
+/// request when the requested object does not exist in its MIB. (SNMP v2)
+///
+/// This value is returned as a with data of length 0
 const NO_SUCH_OBJECT = 128;
+
+/// The requested instance of the object does not exist (SNMP v2)
+///
+/// For example: requesting data from port 9 of an 8-port switch
 const NO_SUCH_INSTANCE = 129;
+
+/// Signifies the end of an SNMP "walk" or "get-next" (SNMP v2)
 const END_OF_MIB_VIEW = 130;

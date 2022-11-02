@@ -10,14 +10,22 @@ import 'package:dart_snmp/src/models/request.dart';
 import 'package:dart_snmp/src/models/varbind.dart';
 import 'package:logging/logging.dart' as logging;
 
+/// An instance of Logger for logging and debugging
 final log = logging.Logger('Snmp');
 
+/// Creates SNMP sessions
 class Snmp {
-  Snmp._(this.target, this.port, this.trapPort, this.retries, this.timeout,
-      this.version,
-      {this.community = '',
-      this.user,
-      logging.Level logLevel = logging.Level.INFO}) {
+  Snmp._(
+    this.target,
+    this.port,
+    this.trapPort,
+    this.retries,
+    this.timeout,
+    this.version, {
+    this.community = '',
+    this.user,
+    logging.Level logLevel = logging.Level.INFO,
+  }) {
     _logging(logLevel);
     assert(community.isNotEmpty || user != null);
     log.info('Snmp ${version.name} session initialized.');
@@ -25,72 +33,91 @@ class Snmp {
 
   /// Opens an SNMP v1 or v2c (default) session with [target]
   static Future<Snmp> createSession(
+    /// The address of the target device we want to communicate with
+    InternetAddress target,
 
-      /// The address of the target device we want to communicate with
-      InternetAddress target,
+    /// The community string to use when communicating via SNMP v1 or v2c
+    {
+    String community = 'public',
 
-      /// The community string to use when communicating via SNMP v1 or v2c
-      {String community = 'public',
+    /// The port which the target device has opened for snmp traffic
+    int port = 161,
 
-      /// The port which the target device has opened for snmp traffic
-      int port = 161,
+    /// The local port where we intend to receive snmp trap messages
+    int trapPort = 162,
 
-      /// The local port where we intend to receive snmp trap messages
-      int trapPort = 162,
+    /// How many times to retry a single snmp request before throwing
+    int retries = 1,
 
-      /// How many times to retry a single snmp request before throwing
-      int retries = 1,
+    /// How long to wait for a single snmp request to resolve
+    Duration timeout = const Duration(seconds: 5),
 
-      /// How long to wait for a single snmp request to resolve
-      Duration timeout = const Duration(seconds: 5),
+    /// Which version of snmp to use. (Should be V1 or V2c if using [createSession])
+    SnmpVersion version = SnmpVersion.v2c,
 
-      /// Which version of snmp to use. (Should be V1 or V2c if using [createSession])
-      SnmpVersion version = SnmpVersion.V2c,
+    /// The local address to listen for snmp responses on
+    InternetAddress? sourceAddress,
 
-      /// The local address to listen for snmp responses on
-      InternetAddress? sourceAddress,
-
-      /// The local port to listen for snmp responses on
-      int? sourcePort,
-      logging.Level logLevel = logging.Level.INFO}) async {
-    assert(version != SnmpVersion.V3);
-    var session = Snmp._(target, port, trapPort, retries, timeout, version,
-        community: community, logLevel: logLevel);
+    /// The local port to listen for snmp responses on
+    int? sourcePort,
+    logging.Level logLevel = logging.Level.INFO,
+  }) async {
+    assert(version != SnmpVersion.v3);
+    var session = Snmp._(
+      target,
+      port,
+      trapPort,
+      retries,
+      timeout,
+      version,
+      community: community,
+      logLevel: logLevel,
+    );
     await session._bind(address: sourceAddress, port: sourcePort);
+
     return session;
   }
 
   /// Opens an SNMP v3 session with [target]
   static Future<Snmp> createV3Session(
+    /// The address of the target device we want to communicate with
+    InternetAddress target,
 
-      /// The address of the target device we want to communicate with
-      InternetAddress target,
+    /// The user credential to use when communicating via SNMP v3
+    User user,
 
-      /// The user credential to use when communicating via SNMP v3
-      User user,
+    /// The port which the target device has opened for snmp traffic
+    {
+    int port = 161,
 
-      /// The port which the target device has opened for snmp traffic
-      {int port = 161,
+    /// The local port where we intend to receive snmp trap messages
+    int trapPort = 162,
 
-      /// The local port where we intend to receive snmp trap messages
-      int trapPort = 162,
+    /// How many times to retry a single snmp request before throwing
+    int retries = 1,
 
-      /// How many times to retry a single snmp request before throwing
-      int retries = 1,
+    /// How long to wait for a single snmp request to resolve
+    Duration timeout = const Duration(seconds: 5),
 
-      /// How long to wait for a single snmp request to resolve
-      Duration timeout = const Duration(seconds: 5),
+    /// The local address to listen for snmp responses on
+    InternetAddress? sourceAddress,
 
-      /// The local address to listen for snmp responses on
-      InternetAddress? sourceAddress,
-
-      /// The local port to listen for snmp responses on
-      int? sourcePort,
-      logging.Level logLevel = logging.Level.INFO}) async {
+    /// The local port to listen for snmp responses on
+    int? sourcePort,
+    logging.Level logLevel = logging.Level.INFO,
+  }) async {
     var session = Snmp._(
-        target, port, trapPort, retries, timeout, SnmpVersion.V3,
-        user: user, logLevel: logLevel);
+      target,
+      port,
+      trapPort,
+      retries,
+      timeout,
+      SnmpVersion.v3,
+      user: user,
+      logLevel: logLevel,
+    );
     await session._bind(address: sourceAddress, port: sourcePort);
+
     return session;
   }
 
@@ -114,6 +141,8 @@ class Snmp {
 
   /// How long to wait for a single snmp request to resolve
   Duration timeout;
+
+  /// The version of the snmp protocol to use
   SnmpVersion version;
 
   /// The socket used for all incoming/outgoing snmp requests/responses
@@ -179,56 +208,60 @@ class Snmp {
 
   /// Sends an SNMPGET request to the specified [Oid]
   Future<Message> get(Oid oid, {InternetAddress? target, int? port}) =>
-      _get(oid, PduType.GetRequest, target: target, port: port);
+      _get(oid, PduType.getRequest, target: target, port: port);
 
   /// Requests the next (lexigraphical) [Oid] after the specified [Oid]
   Future<Message> getNext(Oid oid, {InternetAddress? target, int? port}) =>
-      _get(oid, PduType.GetNextRequest, target: target, port: port);
+      _get(oid, PduType.getNextRequest, target: target, port: port);
 
   /// Walks the entire mib
   ///
   /// If [Oid] is provided, the walk will begin at the specified [Oid]
   Stream<Message> walk({Oid? oid, InternetAddress? target, int? port}) {
-    late StreamController<Message> _ctrl;
+    late StreamController<Message> ctrl;
     var paused = false;
     oid ??= Oid.fromString('1.3.6.1');
 
-    void _walk() async {
+    void walk() async {
       while (true) {
         if (!paused) {
           var msg = await getNext(oid!, target: target, port: port);
           oid = msg.pdu.varbinds.last.oid;
-          if (msg.pdu.error == PduError.NoSuchName) {
+          if (msg.pdu.error == PduError.noSuchName) {
             log.finer('Reached end of walk: ${msg.pdu.error}');
             break;
           } else if (msg.pdu.varbinds[0].tag ==
-              VarbindType.EndOfMibView.value) {
+              VarbindType.endOfMibView.value) {
             log.finer('Reached end of MIB view');
             break;
           } else {
-            _ctrl.add(msg);
+            ctrl.add(msg);
           }
         }
       }
-      await _ctrl.close();
+      await ctrl.close();
     }
 
-    _ctrl = StreamController<Message>(
-        onListen: _walk,
-        onPause: () => paused = true,
-        onResume: () => paused = false,
-        onCancel: () {});
+    ctrl = StreamController<Message>(
+      onListen: walk,
+      onPause: () => paused = true,
+      onResume: () => paused = false,
+      //onCancel: () {},
+    );
 
-    return _ctrl.stream;
+    return ctrl.stream;
   }
 
   /// Sends an SNMPSET request with the [Varbind] as a payload
-  Future<Message> set(Varbind varbind,
-      {InternetAddress? target, int? port}) async {
+  Future<Message> set(
+    Varbind varbind, {
+    InternetAddress? target,
+    int? port,
+  }) async {
     target ??= this.target;
     port ??= this.port;
     var c = Completer<Message>();
-    var p = Pdu(PduType.SetRequest, _generateId(32), [varbind]);
+    var p = Pdu(PduType.setRequest, _generateId(32), [varbind]);
     while (requests.containsKey(p.requestId)) {
       p.requestId = _generateId(32);
     }
@@ -243,12 +276,16 @@ class Snmp {
     }
   }
 
-  Future<Message> _get(Oid oid, PduType type,
-      {InternetAddress? target, int? port}) async {
+  Future<Message> _get(
+    Oid oid,
+    PduType type, {
+    InternetAddress? target,
+    int? port,
+  }) async {
     target ??= this.target;
     port ??= this.port;
     var c = Completer<Message>();
-    var v = Varbind(oid, VarbindType.Null, null);
+    var v = Varbind(oid, VarbindType.nullValue, null);
     var p = Pdu(type, _generateId(32), [v]);
     while (requests.containsKey(p.requestId)) {
       p.requestId = _generateId(32);
