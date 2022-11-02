@@ -236,9 +236,11 @@ class Snmp {
     var r =
         Request(target, port, m, timeout, retries, c.complete, c.completeError);
     _send(r);
-    var result = await c.future;
-    requests.remove(r.requestId);
-    return result;
+    try {
+      return await c.future;
+    } finally {
+      requests.remove(r.requestId);
+    }
   }
 
   Future<Message> _get(Oid oid, PduType type,
@@ -255,9 +257,11 @@ class Snmp {
     var r =
         Request(target, port, m, timeout, retries, c.complete, c.completeError);
     _send(r);
-    var result = await c.future;
-    requests.remove(r.requestId);
-    return result;
+    try {
+      return await c.future;
+    } finally {
+      requests.remove(r.requestId);
+    }
   }
 
   void _send(Request r) {
